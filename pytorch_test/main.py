@@ -29,7 +29,7 @@ def load_data():
 
 
 def train_model(model, loss_criterion, train_loader, optimizer, num_epochs, tensorboard_writer=None, model_name=None,
-                silent=False):
+                silent=False, test_loader=None):
     for epoch in range(num_epochs):
 
         running_loss = 0.0
@@ -45,8 +45,11 @@ def train_model(model, loss_criterion, train_loader, optimizer, num_epochs, tens
 
             # print statistics
             current_loss = loss.item()
+            if tensorboard_writer and iter % 2000 == 1999:
+                test_model(model, test_loader, iter=12500 * epoch + iter, model_name=model_name,
+                           tensorboard_writer=tensorboard_writer)
             if tensorboard_writer and iter % 10 == 0:
-                tensorboard_writer.add_scalar('data/' + model_name, loss.item(), 12500 * epoch + iter)
+                tensorboard_writer.add_scalar('data/loss ' + model_name, loss.item(), 12500 * epoch + iter)
                 for name, param in model.named_parameters():
                     tensorboard_writer.add_histogram(model_name + " " + name, param.clone().cpu().data.numpy(),
                                                      12500 * epoch + iter)
@@ -60,7 +63,7 @@ def train_model(model, loss_criterion, train_loader, optimizer, num_epochs, tens
     print('Finished Training')
 
 
-def test_model(model, test_loader):
+def test_model(model, test_loader, tensorboard_writer=None, iter=None, model_name=None):
     correct = 0
     total = 0
     with torch.no_grad():
@@ -70,7 +73,9 @@ def test_model(model, test_loader):
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
-
+    acc = 100 * correct / total
+    if (tensorboard_writer):
+        tensorboard_writer.add_scalar('data/test_acc ' + model_name, acc, iter)
     print('Accuracy of the network on the 10000 test images: %d %%' % (
         100 * correct / total))
 
@@ -83,14 +88,16 @@ def main():
     mlp = MLP()
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(mlp.parameters(), lr=0.001)
-    train_model(mlp, criterion, train_loader, optimizer, num_epochs=2, model_name='MPL', tensorboard_writer=writer)
+    train_model(mlp, criterion, train_loader, optimizer, num_epochs=2, model_name='MPL', tensorboard_writer=writer,
+                test_loader=test_loader)
     test_model(mlp, test_loader)
 
     # Resnet_like
     mlp = ResNet()
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(mlp.parameters(), lr=0.001)
-    train_model(mlp, criterion, train_loader, optimizer, num_epochs=2, model_name='ResNet', tensorboard_writer = writer)
+    train_model(mlp, criterion, train_loader, optimizer, num_epochs=2, model_name='ResNet', tensorboard_writer=writer,
+                test_loader=test_loader)
     test_model(mlp, test_loader)
 
 
