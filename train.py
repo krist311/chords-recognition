@@ -25,10 +25,7 @@ def load_data():
                                            download=True, transform=transform)
     testloader = torch.utils.data.DataLoader(testset, batch_size=4,
                                              shuffle=False, num_workers=2)
-
-    classes = ('plane', 'car', 'bird', 'cat',
-               'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
-    return trainloader, testloader, classes
+    return trainloader, testloader
 
 
 def train_model(model, loss_criterion, train_loader, optimizer, num_epochs, tensorboard_writer=None,
@@ -84,12 +81,12 @@ def test_model(model, test_loader, tensorboard_writer=None, iter=None):
 
 
 def train(model_name, lr, num_epochs):
-    train_loader, test_loader, classes = load_data()
+    train_loader, test_loader = load_data()
     model = get_model_by_name(model_name)
     if model:
         writer = SummaryWriter('logs/' + model_name)
         criterion = nn.CrossEntropyLoss()
-        optimizer = optim.Adam(model.parameters(), lr=0.001)
+        optimizer = optim.Adam(model.parameters(), lr=lr)
         train_model(model, criterion, train_loader, optimizer, num_epochs=num_epochs,
                     tensorboard_writer=writer,
                     test_loader=test_loader)
@@ -99,17 +96,16 @@ def train(model_name, lr, num_epochs):
 def createParser():
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', '--model', )
-    parser.add_argument('--num_epochs', default=2)
-    parser.add_argument('--learning_rate', default=0.001)
+    parser.add_argument('--num_epochs', default=2, type=int)
+    parser.add_argument('--learning_rate', default=0.001, type=float)
     return parser
 
 
 def get_model_by_name(model_name):
-    if model_name == "ResNet":
+    if model_name.lower() == "resnet":
         return ResNet()
-    elif model_name == "MLP":
+    elif model_name.lower() == "mlp":
         return MLP()
-    return None
 
 
 if __name__ == '__main__':
