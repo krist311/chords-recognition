@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch.nn.functional as F
+from sklearn.ensemble import RandomForestClassifier
 
 
 class MLP(nn.Module):
@@ -91,3 +92,8 @@ class ResNet(nn.Module):
         out = out.view(out.size(0), -1)
         out = self.fc(out)
         return out
+
+
+class RandomForest(RandomForestClassifier):
+    def __init__(self, ):
+        super(RandomForest, self).__init__(criterion='entropy', max_features='log2', n_estimators=300)

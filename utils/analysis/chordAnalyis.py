@@ -12,8 +12,6 @@ import csv
 import copy
 
 
-# Hacer pruebas para comprobar que quedó bien, aunque parece que si
-
 class Chord:
     # Data struct to include start, end, label.
     pass
