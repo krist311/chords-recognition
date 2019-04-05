@@ -24,7 +24,7 @@ class LSTMClassifier(nn.Module):
         return (autograd.Variable(torch.randn(1, batch_size, self.hidden_dim)),
                 autograd.Variable(torch.randn(1, batch_size, self.hidden_dim)))
 
-    def forward(self, batch, lengths):
+    def forward(self, batch):
         self.hidden = self.init_hidden(batch.size(-1))
         outputs, (ht, ct) = self.lstm(batch, self.hidden)
 
