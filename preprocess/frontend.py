@@ -3,15 +3,16 @@ import numpy as np
 from numpy.ma import sin
 from scipy.fftpack import fft
 from scipy.interpolate import interp1d
-from scipy.signal import hamming
+from scipy.signal.windows import hamming
+
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import normalize
 
 
-
 def preprocess_audio(audiopath, feparam):
     print('input in progress...')
-    x, _ = librosa.load(audiopath, feparam['fs'], mono=feparam['stereo_to_mono'], res_type='scipy')
+    print(audiopath)
+    x, _ = librosa.load(audiopath, feparam['fs'], mono=feparam['stereo_to_mono'])
     # we differentiate tone and note in this program
     # by tone we mean 1 / 3 - semitone - wise frequency, by note we mean semitone - wise frequency
     fmin = 27.5  # MIDI note 21, Piano key number 1(A0)
@@ -58,13 +59,14 @@ def preprocess_audio(audiopath, feparam):
     return Ss.T
 
 
-# this matrix can transform original linear space DFT (Hz bin) to log-freq
-# space DFT (1/3 semitone bin) by means of cosine interpolations
-# this process is implemented as described in M. Mauch's thesis
-# first the original 2048-bin DFT is upsampled linearly 40 times
-# then the upsampled spectrum is downsampled non-linearly with a constant-Q
-# Mauch p.99
 def logFreqNoteProfile(ntones, fmin, fratio, USR, fs, nbins, wl):
+    """this matrix can transform original linear space DFT (Hz bin) to log-freq
+    space DFT (1/3 semitone bin) by means of cosine interpolations
+    this process is implemented as described in M. Mauch's thesis
+    first the original 2048-bin DFT is upsampled linearly 40 times
+    then the upsampled spectrum is downsampled non-linearly with a constant-Q
+    Mauch p.99"""
+
     df = fs / wl  # not sure that there should be fs/nbins, according to Mauch it's fs/wl
     fi = (fs / 2) * np.linspace(0, 1, nbins)
     ff = (fs / 2) * np.linspace(0, 1, nbins * USR)
@@ -79,10 +81,10 @@ def logFreqNoteProfile(ntones, fmin, fratio, USR, fs, nbins, wl):
     h = []
     for i in np.arange(nbins):
         hf = np.zeros(USR * nbins)
-        ind_to = np.arange( len(ff) )[ff < fi[i] + df]
-        ind_from = np.arange( len(ff) )[ff > fi[i] - df]
+        ind_to = np.arange(len(ff))[ff < fi[i] + df]
+        ind_from = np.arange(len(ff))[ff > fi[i] - df]
         ind = np.intersect1d(ind_from, ind_to)
-        #ind = [j for j, v in enumerate(ff) if fi[i] - df < v < fi[i] + df]
+        # ind = [j for j, v in enumerate(ff) if fi[i] - df < v < fi[i] + df]
         # in junqi's thesis there is 2*pi instead of pi, but it is wrong in terms of cosine interpolation
         hf[ind] = (np.cos(np.pi * (ff[ind] - fi[i]) / df) / 2) + 0.5
         h.append(hf)
@@ -97,10 +99,9 @@ def logFreqNoteProfile(ntones, fmin, fratio, USR, fs, nbins, wl):
         ind_to = np.arange(len(fk))[fk < ff[i] + df_f[i]]
         ind_from = np.arange(len(fk))[fk > ff[i] - df_f[i]]
         ind = np.intersect1d(ind_from, ind_to)
-        #ind = [j for j, v in enumerate(fk) if ff[i] - df_f[i] < v < ff[i] + df_f[i]]
+        # ind = [j for j, v in enumerate(fk) if ff[i] - df_f[i] < v < ff[i] + df_f[i]]
         hlf[ind] = np.cos(np.pi * (ff[i] - fk[ind]) / df_f[i]) / 2 + 0.5
         hl.append(hlf)
-
 
     # the final matrix is the product of the above two matrice,
     # which will be a matrix of size numbins * numtones
@@ -108,7 +109,7 @@ def logFreqNoteProfile(ntones, fmin, fratio, USR, fs, nbins, wl):
     # vector of numtones, which equals to linear freq to log freq.
     LE = (np.array(h).dot(np.array(hl))).T
     # normalize this transformation matrix row wise (use L1 norm)
-    LE = normalize(LE, axis = 0, norm = 'l1')
+    LE = normalize(LE, axis=0, norm='l1')
     return LE
 
 
@@ -116,13 +117,13 @@ def sin_in_window(wl, f_tone, fs):
     return sin(2 * np.pi * np.arange(1, wl + 1) * f_tone / fs)
 
 
-# build the tone profiles for calculating note salience matrix
-# each sinusoidal at frequency 'ftone' is generated via sin(2*pi*n*f/fs)
-# the true frequency of the tone is supposed to lie on bin notenum*numsemitones-1,
-# e.g. A4 is bin 49*numsemitones-1 = 146, C4 is bin 40*numsemitones-1 = 119 (note that notenum is
-# not midinum, note num is the index of the key on an 88 key piano with A0 = 1)
-# Mauch p.57
 def toneProfileGen(s, wl, numtones, numsemitones, fmin, fmax, fratio, fs):
+    """build the tone profiles for calculating note salience matrix
+    each sinusoidal at frequency 'ftone' is generated via sin(2*pi*n*f/fs)
+    the true frequency of the tone is supposed to lie on bin notenum*numsemitones-1,
+    e.g. A4 is bin 49*numsemitones-1 = 146, C4 is bin 40*numsemitones-1 = 119 (note that notenum is
+    not midinum, note num is the index of the key on an 88 key piano with A0 = 1)
+    Mauch p.57"""
     w = hamming(wl)
     Ms, Mc = [], []  # simple and complex tone profiles
     for tone_id in range(numtones):
@@ -139,9 +140,10 @@ def toneProfileGen(s, wl, numtones, numsemitones, fmin, fmax, fratio, fs):
     return Ms, Mc
 
 
-# tuning based on phase information
-# assuming nsemitones = 3
+
 def phase_tuning(S):
+    """tuning based on phase information
+    assuming nsemitones = 3"""
     nslices = S.shape[1]
     ntones = S.shape[0]
 
@@ -164,21 +166,21 @@ def phase_tuning(S):
     return S, et
 
 
-# interpolate the original S at every x position throughout
-# nslices*ntones, the edge values are just interpolated as zeros
-
-# now modify S based on the new tuning of the song, so that
-# the middle bin of each semitone corresponds to the semitone frequency in
-# the estimated tuning
-# let's treat the problem in this way:
-# st = standard tuning = 440Hz
-# et = estimated tuning
-# now we wonder what's the position of the et related to st in the axis of
-# 3 semitones per bin in terms of bin
-# so we have st * (2 ^ (p / 36)) = et
-# so p = (log(et / st) / log(2)) * 36
 
 def tuning_update(S, et):
+    """interpolate the original S at every x position throughout
+    nslices*ntones, the edge values are just interpolated as zeros
+
+    now modify S based on the new tuning of the song, so that
+    the middle bin of each semitone corresponds to the semitone frequency in
+    the estimated tuning
+    let's treat the problem in this way:
+    st = standard tuning = 440Hz
+    et = estimated tuning
+    now we wonder what's the position of the et related to st in the axis of
+    3 semitones per bin in terms of bin
+    so we have st * (2 ^ (p / 36)) = et
+    so p = (log(et / st) / log(2)) * 36"""
     st = 440
     p = (np.log(et / st) / np.log(2)) * 36
 
@@ -196,12 +198,11 @@ def tuning_update(S, et):
         S[:, j] = yi
     return S
 
-
-# Wrapped phase means that all phase points are constrained to the range
-# -180 degrees ? Phase Offset < 180 degrees. When the actual phase is outside this range,
-# the phase value is increased or decreased by a multiple of 360 degrees to put the phase value
-# within +/- 180 degrees of the Phase Offset value.
 def wrapd(angle):
+    """Wrapped phase means that all phase points are constrained to the range
+     -180 degrees ? Phase Offset < 180 degrees. When the actual phase is outside this range,
+     the phase value is increased or decreased by a multiple of 360 degrees to put the phase value
+     within +/- 180 degrees of the Phase Offset value."""
     while not -np.pi <= angle < np.pi:
         if angle < -np.pi:
             angle = angle + 2 * np.pi

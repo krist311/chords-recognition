@@ -1,45 +1,18 @@
 import argparse
 
-import sys
 import torch
-import torchvision
-import torchvision.transforms as transforms
 import torch.optim as optim
 import torch.nn as nn
-import numpy as np
 from tensorboardX import SummaryWriter
-from torch.utils.data import SubsetRandomSampler
+from torch.autograd import Variable
 
-from models import ResNet, MLP
+from models import RandomForest
+from dataloader import get_train_val_dataloader
+from preprocess.chords import preds_to_lab
+from preprocess.generators import gen_test_data, gen_train_data
+from preprocess.params import root_params
 
-
-def load_data():
-    transform = transforms.Compose(
-        [transforms.ToTensor(),
-         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-
-    train_set = torchvision.datasets.CIFAR10(root='./data', train=True,
-                                             download=True, transform=transform)
-    valid_size = 0.1
-    num_train = len(train_set)
-    indices = list(range(num_train))
-    np.random.seed(3)
-    np.random.shuffle(indices)
-    split = int(np.floor(valid_size * num_train))
-    train_idx, valid_idx = indices[split:], indices[:split]
-    train_sampler = SubsetRandomSampler(train_idx)
-    valid_sampler = SubsetRandomSampler(valid_idx)
-
-    train_loader = torch.utils.data.DataLoader(train_set, batch_size=128,
-                                               sampler=train_sampler, num_workers=2)
-    val_loader = torch.utils.data.DataLoader(train_set, batch_size=128,
-                                             sampler=valid_sampler, num_workers=2)
-    test_set = torchvision.datasets.CIFAR10(root='./data', train=False,
-                                            download=True, transform=transform)
-    test_loader = torch.utils.data.DataLoader(test_set, batch_size=128,
-                                              shuffle=False, num_workers=2)
-    return train_loader, val_loader, test_loader
-
+use_gpu = torch.cuda.is_available()
 
 def train_model(model, loss_criterion, train_loader, optimizer, scheduler, num_epochs, tensorboard_writer=None,
                 silent=False, val_loader=None):
@@ -49,6 +22,10 @@ def train_model(model, loss_criterion, train_loader, optimizer, scheduler, num_e
         scheduler.step()
         for iter_in_epoch, data in enumerate(train_loader, 0):
             inputs, labels = data
+            if use_gpu:
+                inputs, labels = Variable(inputs.cuda()), labels.cuda()
+            else:
+                inputs = Variable(inputs)
             optimizer.zero_grad()
 
             outputs = model(inputs)
@@ -59,8 +36,8 @@ def train_model(model, loss_criterion, train_loader, optimizer, scheduler, num_e
             # print statistics
             running_loss += loss.item()
             if iteration % 100 == 99:
-                train_acc = test_model(model, train_loader)
-                val_acc = test_model(model, val_loader)
+                train_acc = t_model(model, train_loader)
+                val_acc = t_model(model, val_loader)
                 av_loss = running_loss / 100
                 if tensorboard_writer:
                     write_results(tensorboard_writer, av_loss, iteration, model, train_acc, val_acc)
@@ -85,7 +62,7 @@ def write_results(tensorboard_writer, loss, iter, model, train_acc, test_acc):
                                          iter)
 
 
-def test_model(model, test_loader, print_results=False):
+def t_model(model, test_loader, print_results=False):
     correct = 0
     total = 0
     with torch.no_grad():
@@ -100,24 +77,20 @@ def test_model(model, test_loader, print_results=False):
         print("Test acc: ", acc)
     return acc
 
-
-def train(model_name, lr, num_epochs, weight_decay):
-    train_loader, val_loader, test_loader = load_data()
-    model = get_model_by_name(model_name)
-    if model:
-        writer = SummaryWriter('logs/' + model_name)
-        criterion = nn.CrossEntropyLoss()
-        optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
-        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1)
-        train_model(model, criterion, train_loader, optimizer, scheduler, num_epochs=num_epochs,
-                    tensorboard_writer=writer,
-                    val_loader=val_loader)
-        test_model(model, test_loader, print_results=True)
+def t(model, songs_list, audio_root, params, save_path):
+    param, _, _, _, category = params()
+    for song_name, X in gen_test_data(songs_list, audio_root, param):
+        y = model.predict(X)
+        preds_to_lab(y, param['hop_size'], param['fs'], category, save_path, song_name)
 
 
 def createParser():
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', '--model', )
+    parser.add_argument('--train_list_path')
+    parser.add_argument('--test_list_path')
+    parser.add_argument('--audio_path')
+    parser.add_argument('--gt_path')
     parser.add_argument('--num_epochs', default=2, type=int)
     parser.add_argument('--learning_rate', default=0.001, type=float)
     parser.add_argument('--weight_decay', default=1e-5, type=float)
@@ -125,13 +98,62 @@ def createParser():
 
 
 def get_model_by_name(model_name):
-    if model_name.lower() == "resnet":
-        return ResNet()
-    elif model_name.lower() == "mlp":
-        return MLP()
+    if model_name.lower() == "rf":
+        return RandomForest()
+
+
+def train_rf(data_path):
+    rf = RandomForest()
+    train_loader, val_loader = get_train_val_dataloader(data_path)
+    for data in train_loader:
+        inputs, labels = data
+        rf.fit(inputs, labels)
+    val_rf(rf, val_loader)
+    return rf
+
+
+def val_rf(model, val_loader, print_results=False):
+    total, correct = 0, 0
+    for data in val_loader:
+        inputs, labels = data
+        predicted = model.predict(inputs)
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
+    acc = 100 * correct / total
+    print("Test acc: ", acc)
+    return acc
+
+
+def train_LSTM(model, train_path, num_epochs, weight_decay, lr):
+    if use_gpu:
+        model = model.cuda()
+    train_loader, val_loader = get_train_val_dataloader(train_path)
+    writer = SummaryWriter('logs/' + 'LSTM')
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1)
+    train_model(model, criterion, train_loader, optimizer, scheduler, num_epochs=num_epochs,
+                tensorboard_writer=writer,
+                val_loader=val_loader)
+    return model
+
+
+# songs_list='C:/Users/Daniil/Documents/Git/baseline/tangkk-mirex-ace-master/tracklists/TheBeatles1List',
+# audio_root='C:/Users/Daniil/Documents/Git/baseline/tangkk-mirex-ace-master/audio/',
+# gt_root='C:/Users/Daniil/Documents/Git/vkr/data/gt/'
 
 
 if __name__ == '__main__':
-    parser = createParser()
-    args = parser.parse_args(sys.argv[1:])
-    train(args.model, args.learning_rate, args.num_epochs, args.weight_decay)
+    use_gpu = torch.cuda.is_available()
+    # parser = createParser()
+    # args = parser.parse_args(sys.argv[1:])
+    songs_list = 'C:/Users/Daniil/Documents/Git/baseline/tangkk-mirex-ace-master/tracklists/TheBeatles1List'
+    audio_root = 'C:/Users/Daniil/Documents/Git/baseline/tangkk-mirex-ace-master/audio/'
+    gt_root = 'C:/Users/Daniil/Documents/Git/vkr/data/gt/'
+    save_train_data_as = 'C:/Users/Daniil/Documents/Git/vkr/data/gt/train.csv'
+    # prepare train dataset
+    gen_train_data(songs_list, audio_root, gt_root, root_params, save_train_data_as)
+    model = train_rf(save_train_data_as)
+    # val_rf(model)
+
+    # train(args.model, args.learning_rate, args.num_epochs, args.weight_decay)

@@ -19,7 +19,7 @@ class DatasetConverted(Dataset):
         return cqt, label
 
 
-def get_dataloader(file_path):
+def get_train_val_dataloader(file_path):
     df = pd.read_csv(file_path,header = None)
     train = df.sample(frac=0.8, random_state=200)
     val = df.drop(train.index)
