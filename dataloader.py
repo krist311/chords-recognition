@@ -39,12 +39,12 @@ class SeqDatasetConverter(Dataset):
     def __getitem__(self, index):
         song_data = genfromtxt(self.data_list.iloc[index, 0], delimiter=',', dtype=float)
         # song_data = torch.from_numpy(song_data)
-        return song_data[:, :-1], song_data[:, -1]
+        return song_data[:, :-1], torch.from_numpy(song_data[:, -1]).long()
 
 
 def get_train_val_seq_dataloader(file_path):
     df = pd.read_csv(file_path, header=None)
     train = df.sample(frac=0.8, random_state=200)
     val = df.drop(train.index)
-    return DataLoader(SeqDatasetConverter(train), batch_size=8, shuffle=True), DataLoader(SeqDatasetConverter(val),
-                                                                                          batch_size=8, shuffle=True)
+    return DataLoader(SeqDatasetConverter(train), batch_size=4, shuffle=True), DataLoader(SeqDatasetConverter(val),
+                                                                                          batch_size=1, shuffle=True)

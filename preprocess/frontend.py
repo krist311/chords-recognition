@@ -10,9 +10,12 @@ from sklearn.preprocessing import normalize
 
 
 def preprocess_audio(audiopath, feparam):
-    print('input in progress...')
-    print(audiopath)
     x, _ = librosa.load(audiopath, feparam['fs'], mono=feparam['stereo_to_mono'])
+    # trim or zeropad
+    if len(x) > feparam['trim_to_len']:
+        x = x[:feparam['trim_to_len']]
+    else:
+        x = np.pad(x, ((0, feparam['trim_to_len'] - len(x))), 'constant')
     # we differentiate tone and note in this program
     # by tone we mean 1 / 3 - semitone - wise frequency, by note we mean semitone - wise frequency
     fmin = 27.5  # MIDI note 21, Piano key number 1(A0)
@@ -44,7 +47,6 @@ def preprocess_audio(audiopath, feparam):
     # matrix from this later. Thus logFreq is an deductive process.
 
     print('computing salience matrix...')
-    print(LE.shape)
     if feparam['enCosSim']:
         # calculating cosine similarity
         Ss = cosine_similarity(Ms, X)

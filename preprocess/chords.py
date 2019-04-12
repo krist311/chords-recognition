@@ -102,6 +102,9 @@ def convert_gt(gt_path, hop_size, fs, song_len, category):
                 y.extend((eb - sb) * [ch_num])
         if len(y) < song_len:
             y.extend((song_len - len(y)) * [ch_num])
+        else:
+            y = y[:song_len]
+            inds_to_remove = [ind for ind in inds_to_remove if ind < song_len]
 
     return y, inds_to_remove
 

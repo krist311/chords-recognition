@@ -27,26 +27,27 @@ def train_model(model, loss_criterion, train_loader, optimizer, scheduler, num_e
             else:
                 inputs = Variable(inputs)
             optimizer.zero_grad()
-
+            model.zero_grad()
             outputs = model(inputs)
-            loss = loss_criterion(outputs, labels.long())
+            loss = loss_criterion(outputs, labels)
             loss.backward()
             optimizer.step()
 
             # print statistics
             running_loss += loss.item()
-            if iteration % 100 == 99:
-                train_acc = t_model(model, train_loader)
-                val_acc = t_model(model, val_loader)
-                av_loss = running_loss / 100
-                if tensorboard_writer:
-                    write_results(tensorboard_writer, av_loss, iteration, model, train_acc, val_acc)
-                if not silent:
-                    print_results(iter_in_epoch, epoch, av_loss, train_acc, val_acc)
-                running_loss = 0
+
+            #train_acc = t_model(model, train_loader)
+            train_acc = 0
+            val_acc = t_model(model, val_loader)
+            av_loss = running_loss
+            if tensorboard_writer:
+                write_results(tensorboard_writer, av_loss, iteration, model, train_acc, val_acc)
+            if not silent:
+                print_results(iter_in_epoch, epoch, av_loss, train_acc, val_acc)
+            running_loss = 0
             iteration += 1
     print('Finished Training')
-
+    t_model(model, val_loader, print_results=True)
 
 def print_results(iter, epoch, loss, train_acc, val_acc):
     print('[%d, %5d] loss: %.3f train_acc: %.3f, val_acc: %.3f' %
@@ -70,7 +71,7 @@ def t_model(model, test_loader, print_results=False):
             images, labels = data
             outputs = model(images)
             _, predicted = torch.max(outputs.data, 1)
-            total += labels.size(0)
+            total += labels.size(1)
             correct += (predicted == labels).sum().item()
     acc = 100 * correct / total
     if print_results:
@@ -129,9 +130,9 @@ def train_LSTM(model, train_path, num_epochs, weight_decay, lr):
         model = model.cuda()
     train_loader, val_loader = get_train_val_seq_dataloader(train_path)
     writer = SummaryWriter('logs/' + 'LSTM')
-    criterion = nn.NLLLoss(size_average=False)
+    criterion = nn.NLLLoss()
     optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
     train_model(model, criterion, train_loader, optimizer, scheduler, num_epochs=num_epochs,
                 tensorboard_writer=writer,
                 val_loader=val_loader)
