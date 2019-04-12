@@ -27,22 +27,29 @@ def gen_test_data(songs_list, audio_root, params):
 def gen_train_data(songs_list, audio_root, gt_root, params, converted_root=None):
     param, _, _, _, category, _ = params()
     converted_list = []
+    X,y = [],[]
     for song_title, audio_path in iter_songs_list(songs_list):
         print('collecting training data of ', song_title)
-        X = preprocess_audio(f'{audio_root}/{audio_path}', param)
+        X_song = preprocess_audio(f'{audio_root}/{audio_path}', param)
         # ** ** ** map audio content to gt ** ** **
-        y_nums, inds_to_remove = convert_gt(f'{gt_root}/{song_title}.lab', param['hop_size'], param['fs'], len(X),
+        y_nums, inds_to_remove = convert_gt(f'{gt_root}/{song_title}.lab', param['hop_size'], param['fs'], len(X_song),
                                             category)
-        np.delete(X, np.r_[inds_to_remove])
+        np.delete(X_song, np.r_[inds_to_remove])
         # TODO transpose chords
-        y = chord_nums_to_inds(y_nums, category)
+        y_song = chord_nums_to_inds(y_nums, category)
         if converted_root:
             converted_path = f'{converted_root}/{song_title}.csv'
             os.makedirs(converted_path[:-len(converted_path.split('/')[-1])], exist_ok=True)
-            np.savetxt(converted_path, np.append(X, np.array([y]).T, axis=1),
+            np.savetxt(converted_path, np.append(X_song, np.array([y_song]).T, axis=1),
                        delimiter=",", fmt='%s')
             converted_list.append(converted_path)
+        else:
+            X.append(X_song)
+            y.append(y_song)
         # save list of converted songs
-        if converted_list:
-            converted_name = f"{songs_list.split('/')[-1].split('.')[0]}_converted.txt"
-            np.savetxt(converted_name, converted_list, fmt='%s')
+    if converted_list:
+        converted_list_name = f"{songs_list.split('/')[-1].split('.')[0]}_converted.txt"
+        np.savetxt(converted_list_name, converted_list, fmt='%s')
+        return converted_list_name
+    else:
+        return X, y

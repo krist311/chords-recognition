@@ -34,7 +34,6 @@ def preprocess_audio(audiopath, feparam):
     LE = logFreqNoteProfile(ntones, fmin, fratio, USR, feparam['fs'], nbins=int(feparam['wl'] / 2 + 1),
                             wl=feparam['wl'])
 
-    print('computing spectrogram...')
     # TODO lowcat as done in mySpectogram
     X = abs(librosa.stft(x, n_fft=feparam['wl'], hop_length=feparam['hop_size'], window='hamming'))
 
@@ -46,7 +45,6 @@ def preprocess_audio(audiopath, feparam):
     # tone salience matrix. And the nnls process will infer note salience
     # matrix from this later. Thus logFreq is an deductive process.
 
-    print('computing salience matrix...')
     if feparam['enCosSim']:
         # calculating cosine similarity
         Ss = cosine_similarity(Ms, X)

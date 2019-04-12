@@ -6,13 +6,16 @@ import torch.nn as nn
 from tensorboardX import SummaryWriter
 from torch.autograd import Variable
 
-from models import RandomForest
+from models import RandomForest, LSTMClassifier
 from dataloader import get_train_val_dataloader, get_train_val_seq_dataloader
 from preprocess.chords import preds_to_lab
 from preprocess.generators import gen_test_data, gen_train_data
 from preprocess.params import root_params
+import sys
+
 torch.set_default_dtype(torch.float64)
 use_gpu = torch.cuda.is_available()
+
 
 def train_model(model, loss_criterion, train_loader, optimizer, scheduler, num_epochs, tensorboard_writer=None,
                 silent=False, val_loader=None):
@@ -36,8 +39,7 @@ def train_model(model, loss_criterion, train_loader, optimizer, scheduler, num_e
             # print statistics
             running_loss += loss.item()
 
-            #train_acc = t_model(model, train_loader)
-            train_acc = 0
+            train_acc = t_model(model, train_loader)
             val_acc = t_model(model, val_loader)
             av_loss = running_loss
             if tensorboard_writer:
@@ -48,6 +50,7 @@ def train_model(model, loss_criterion, train_loader, optimizer, scheduler, num_e
             iteration += 1
     print('Finished Training')
     t_model(model, val_loader, print_results=True)
+
 
 def print_results(iter, epoch, loss, train_acc, val_acc):
     print('[%d, %5d] loss: %.3f train_acc: %.3f, val_acc: %.3f' %
@@ -78,6 +81,7 @@ def t_model(model, test_loader, print_results=False):
         print("Test acc: ", acc)
     return acc
 
+
 def t(model, songs_list, audio_root, params, save_path):
     param, _, _, _, category = params()
     for song_name, X in gen_test_data(songs_list, audio_root, param):
@@ -88,13 +92,15 @@ def t(model, songs_list, audio_root, params, save_path):
 def createParser():
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', '--model', )
-    parser.add_argument('--train_list_path')
-    parser.add_argument('--test_list_path')
-    parser.add_argument('--audio_path')
-    parser.add_argument('--gt_path')
     parser.add_argument('--num_epochs', default=2, type=int)
-    parser.add_argument('--learning_rate', default=0.001, type=float)
+    parser.add_argument('--learning_rate', default=0.01, type=float)
     parser.add_argument('--weight_decay', default=1e-5, type=float)
+    parser.add_argument('--songs_list', default='data/tracklists/TheBeatles180List', type=str)
+    parser.add_argument('--audio_root', default='data/audio/', type=str)
+    parser.add_argument('--gt_root', default='data/gt/', type=str)
+    parser.add_argument('--conv_root', default='data/converted/', type=str)
+    parser.add_argument('--conv_list', default='', type=str)
+    parser.add_argument('--category', default='MirexRoot', type=str)
     return parser
 
 
@@ -139,22 +145,21 @@ def train_LSTM(model, train_path, num_epochs, weight_decay, lr):
     return model
 
 
-# songs_list='C:/Users/Daniil/Documents/Git/baseline/tangkk-mirex-ace-master/tracklists/TheBeatles1List',
-# audio_root='C:/Users/Daniil/Documents/Git/baseline/tangkk-mirex-ace-master/audio/',
-# gt_root='C:/Users/Daniil/Documents/Git/vkr/data/gt/'
+def get_params_by_category(category):
+    if category == 'MirexRoot':
+        _, _, _, _, _, y_size = root_params()
+        return root_params, y_size
 
 
 if __name__ == '__main__':
     use_gpu = torch.cuda.is_available()
-    # parser = createParser()
-    # args = parser.parse_args(sys.argv[1:])
-    songs_list = 'C:/Users/Daniil/Documents/Git/baseline/tangkk-mirex-ace-master/tracklists/TheBeatles1List'
-    audio_root = 'C:/Users/Daniil/Documents/Git/baseline/tangkk-mirex-ace-master/audio/'
-    gt_root = 'C:/Users/Daniil/Documents/Git/vkr/data/gt/'
-    save_train_data_as = 'C:/Users/Daniil/Documents/Git/vkr/data/gt/train.csv'
+    parser = createParser()
+    args = parser.parse_args(sys.argv[1:])
     # prepare train dataset
-    gen_train_data(songs_list, audio_root, gt_root, root_params, save_train_data_as)
-    model = train_rf(save_train_data_as)
-    # val_rf(model)
-
-    # train(args.model, args.learning_rate, args.num_epochs, args.weight_decay)
+    params, y_size = get_params_by_category(args.category)
+    conv_list = args.conv_list
+    if not conv_list:
+        conv_list = gen_train_data(args.songs_list, args.audio_root, args.gt_root, params, args.conv_root)
+    model = LSTMClassifier(input_size=252, hidden_dim=200, output_size=y_size)
+    train_LSTM(model, train_path=conv_list, num_epochs=args.num_epochs,
+               weight_decay=args.weight_decay, lr=args.lr)
