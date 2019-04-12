@@ -7,11 +7,11 @@ from tensorboardX import SummaryWriter
 from torch.autograd import Variable
 
 from models import RandomForest
-from dataloader import get_train_val_dataloader
+from dataloader import get_train_val_dataloader, get_train_val_seq_dataloader
 from preprocess.chords import preds_to_lab
 from preprocess.generators import gen_test_data, gen_train_data
 from preprocess.params import root_params
-
+torch.set_default_dtype(torch.float64)
 use_gpu = torch.cuda.is_available()
 
 def train_model(model, loss_criterion, train_loader, optimizer, scheduler, num_epochs, tensorboard_writer=None,
@@ -29,7 +29,7 @@ def train_model(model, loss_criterion, train_loader, optimizer, scheduler, num_e
             optimizer.zero_grad()
 
             outputs = model(inputs)
-            loss = loss_criterion(outputs, labels)
+            loss = loss_criterion(outputs, labels.long())
             loss.backward()
             optimizer.step()
 
@@ -127,9 +127,9 @@ def val_rf(model, val_loader, print_results=False):
 def train_LSTM(model, train_path, num_epochs, weight_decay, lr):
     if use_gpu:
         model = model.cuda()
-    train_loader, val_loader = get_train_val_dataloader(train_path)
+    train_loader, val_loader = get_train_val_seq_dataloader(train_path)
     writer = SummaryWriter('logs/' + 'LSTM')
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.NLLLoss(size_average=False)
     optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1)
     train_model(model, criterion, train_loader, optimizer, scheduler, num_epochs=num_epochs,

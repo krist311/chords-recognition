@@ -87,7 +87,8 @@ def root_params():
     }
     #avaliable options: MirexRoot, MirexMajMin, MirexMajMinBass, MirexSevenths, MirexSeventhsBass. The same as in MusOOEvaluator.
     mirex_category = "MirexRoot"
+    label_size = 13
 
-    return feparam, beparam, dbnparam, dbn2param, mirex_category
+    return feparam, beparam, dbnparam, dbn2param, mirex_category, label_size
 
 
