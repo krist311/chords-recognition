@@ -162,4 +162,4 @@ if __name__ == '__main__':
         conv_list = gen_train_data(args.songs_list, args.audio_root, args.gt_root, params, args.conv_root)
     model = LSTMClassifier(input_size=252, hidden_dim=200, output_size=y_size)
     train_LSTM(model, train_path=conv_list, num_epochs=args.num_epochs,
-               weight_decay=args.weight_decay, lr=args.lr)
+               weight_decay=args.weight_decay, lr=args.learning_rate)
