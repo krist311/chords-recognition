@@ -5,6 +5,8 @@ import pandas as pd
 from numpy import genfromtxt
 
 torch.set_default_dtype(torch.float64)
+
+
 class DatasetConverted(Dataset):
     def __init__(self, data, transform=None):
         self.data = data

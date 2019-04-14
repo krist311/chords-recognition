@@ -6,7 +6,6 @@ def root_params():
         'fs': 11025,
         'wl': 4096,
         'hop_size': 512,
-        'trim_to_len': 11025*60*3,# 3 minutes
         # log-frequency spectrum
         'enlogFreq': True,
         'enCosSim': False,

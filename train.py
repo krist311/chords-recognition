@@ -101,6 +101,8 @@ def createParser():
     parser.add_argument('--conv_root', default='data/converted/', type=str)
     parser.add_argument('--conv_list', default='', type=str)
     parser.add_argument('--category', default='MirexRoot', type=str)
+    parser.add_argument('--subsong_len', default=40, type=int)
+    parser.add_argument('--song_len', default=180, type=int)
     return parser
 
 
@@ -127,7 +129,8 @@ def val_rf(model, val_loader, print_results=False):
         total += labels.size(0)
         correct += (predicted == labels).sum().item()
     acc = 100 * correct / total
-    print("Test acc: ", acc)
+    if print_results:
+        print("Test acc: ", acc)
     return acc
 
 
@@ -136,7 +139,7 @@ def train_LSTM(model, train_path, num_epochs, weight_decay, lr):
         model = model.cuda()
     train_loader, val_loader = get_train_val_seq_dataloader(train_path)
     writer = SummaryWriter('logs/' + 'LSTM')
-    criterion = nn.NLLLoss()
+    criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
     train_model(model, criterion, train_loader, optimizer, scheduler, num_epochs=num_epochs,
@@ -159,7 +162,8 @@ if __name__ == '__main__':
     params, y_size = get_params_by_category(args.category)
     conv_list = args.conv_list
     if not conv_list:
-        conv_list = gen_train_data(args.songs_list, args.audio_root, args.gt_root, params, args.conv_root)
+        conv_list = gen_train_data(args.songs_list, args.audio_root, args.gt_root, params, args.conv_root,
+                                   args.subsong_len, args.song_len)
     model = LSTMClassifier(input_size=252, hidden_dim=200, output_size=y_size)
     train_LSTM(model, train_path=conv_list, num_epochs=args.num_epochs,
                weight_decay=args.weight_decay, lr=args.learning_rate)

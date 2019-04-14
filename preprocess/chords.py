@@ -102,10 +102,6 @@ def convert_gt(gt_path, hop_size, fs, song_len, category):
                 y.extend((eb - sb) * [ch_num])
         if len(y) < song_len:
             y.extend((song_len - len(y)) * [ch_num])
-        else:
-            y = y[:song_len]
-            inds_to_remove = [ind for ind in inds_to_remove if ind < song_len]
-
     return y, inds_to_remove
 
 
@@ -219,15 +215,15 @@ def split_chord(chord):
     root, type_name, adds, bass = '', '', [], ''
     if chord == 'N':
         root = chord
-    elif ':' in chord:
-        root, type_name = chord.split(":")
-        # check if there are additions
-        if '(' in type_name:
-            adds = type_name[type_name.find("(") + 1:type_name.find(")")].split(',')
-            type_name = type_name[:type_name.find("(")] + type_name[type_name.find(")") + 1:]
-        # check if there is bass
-        if '/' in type_name:
-            type_name, bass = type_name.split('/')
+    if '/' in chord:
+        chord, bass = chord.split('/')
+        root = chord
+    if '(' in type_name:
+        adds = type_name[type_name.find('(') + 1:type_name.find(')')].split(',')
+        chord = type_name[:type_name.find('(')] + type_name[type_name.find(')') + 1:]
+        root = chord
+    if ':' in chord:
+        root, type_name = chord.split(':')
     else:
         # cast root only chords to maj
         root, type_name = chord, 'maj'

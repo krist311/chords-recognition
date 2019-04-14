@@ -14,11 +14,10 @@ class LSTMClassifier(nn.Module):
         super(LSTMClassifier, self).__init__()
         self.input_size = input_size
         self.hidden_dim = hidden_dim
-        self.num_layers = 1
-        self.lstm = nn.LSTM(input_size, hidden_dim, num_layers=1)
+        self.num_layers = 2
+        self.lstm = nn.LSTM(input_size, hidden_dim, num_layers=self.num_layers)
 
         self.hidden2out = nn.Linear(hidden_dim, output_size)
-        self.hidden = self.init_hidden(4)
         #self.dropout_layer = nn.Dropout(p=0.2)
 
     def init_hidden(self, batch_size):
