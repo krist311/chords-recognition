@@ -35,6 +35,7 @@ def train_model(model, loss_criterion, train_loader, optimizer, scheduler, num_e
             loss = loss_criterion(outputs, labels)
             loss.backward()
             optimizer.step()
+            val_model(model, train_loader)
             if iteration % 10 == 9:
                 # print statistics
                 running_loss += loss.item()
@@ -71,14 +72,14 @@ def val_model(model, test_loader, print_results=False):
     total = 0
     with torch.no_grad():
         for data in test_loader:
-            images, labels = data
-            outputs = model(images)
+            inputs, labels = data
+            outputs = model(inputs)
             _, predicted = torch.max(outputs.data, 1)
-            total += labels.size(1)
+            total += labels.size(0)*labels.size(1)
             correct += (predicted == labels).sum().item()
     acc = 100 * correct / total
     if print_results:
-        print("Test acc: ", acc)
+        print("Val acc: ", acc)
     return acc
 
 
