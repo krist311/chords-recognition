@@ -1,4 +1,10 @@
-Currently model fitted songwise, sequence length 3876
+#Structure of repo:
+- <b>data</b>
+  - <b>audio</b> - default folder for raw audio files
+  - <b>converted</b> - default folder for the saving preproced data in csv format
+  - <b>gt</b> - contains .lab files with chords
+  - <b>tracklists</b> - contains lists of paths to audio files starting with 'audio_root' parameter
+
 # Models:
 ## LSTM
   <br>Accuracy on test-set: to be determined
