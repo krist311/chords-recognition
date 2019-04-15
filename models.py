@@ -36,5 +36,6 @@ class LSTMClassifier(nn.Module):
 
 
 class RandomForest(RandomForestClassifier):
-    def __init__(self):
-        super(RandomForest, self).__init__(criterion='entropy', max_features='log2', n_estimators=300, warm_start=True)
+    def __init__(self, criterion, max_features, n_estimators):
+        super(RandomForest, self).__init__(criterion=criterion, max_features=max_features, n_estimators=n_estimators,
+                                           warm_start=True)

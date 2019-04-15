@@ -1,5 +1,4 @@
-def root_params():
-    feparam = {
+feparam = {
         # input parameters
         'stereo_to_mono': True,
         # spectorgam parameters
@@ -49,9 +48,8 @@ def root_params():
         # normalization
         'normalization': 1  # Inf change than you'll realize what does it mean
     }
-    # ****** Back-end control ****** %
-
-    beparam = {
+# ****** Back-end control ****** %
+beparam = {
         # normalization
         'normalization': 1,  # Inf change than you'll realize what does it mean
         'useSIM1': 0,  # work together with 'BassOnsetSegment'
@@ -66,7 +64,7 @@ def root_params():
         'enBassTrebleCorrect': 1,  # work together with 'noSegmentation'
         'btcVersion': 3
     }
-    dbnparam = {
+dbnparam = {
         'muCBass': 1,
         'muNCBass': 1,
         'muTreble': 1,
@@ -77,7 +75,7 @@ def root_params():
         'sigma2NoChord': 0.2,
         'selfTrans': 1e12
     }
-    dbn2param = {
+dbn2param = {
         'mu': 1,
         'sigma': 0.1,
         'wTreble': 1,
@@ -85,10 +83,35 @@ def root_params():
         'wNCBass': 0.5,
         'selfTrans': 1e12
     }
+
+def root_params():
     #avaliable options: MirexRoot, MirexMajMin, MirexMajMinBass, MirexSevenths, MirexSeventhsBass. The same as in MusOOEvaluator.
     mirex_category = "MirexRoot"
     label_size = 13
+    return feparam, beparam, dbnparam, dbn2param, mirex_category, label_size
 
+def maj_min_params():
+    #avaliable options: MirexRoot, MirexMajMin, MirexMajMinBass, MirexSevenths, MirexSeventhsBass. The same as in MusOOEvaluator.
+    mirex_category = "MirexMajMin"
+    label_size = 25
+    return feparam, beparam, dbnparam, dbn2param, mirex_category, label_size
+
+def maj_min_bass_params():
+    #avaliable options: MirexRoot, MirexMajMin, MirexMajMinBass, MirexSevenths, MirexSeventhsBass. The same as in MusOOEvaluator.
+    mirex_category = "MirexMajMinBass"
+    label_size = 49
+    return feparam, beparam, dbnparam, dbn2param, mirex_category, label_size
+
+def seventh_params():
+    #avaliable options: MirexRoot, MirexMajMin, MirexMajMinBass, MirexSevenths, MirexSeventhsBass. The same as in MusOOEvaluator.
+    mirex_category = "MirexSevenths"
+    label_size = 61
+    return feparam, beparam, dbnparam, dbn2param, mirex_category, label_size
+
+def seventh_bass_params():
+    #avaliable options: MirexRoot, MirexMajMin, MirexMajMinBass, MirexSevenths, MirexSeventhsBass. The same as in MusOOEvaluator.
+    mirex_category = "MirexSeventhsBass"
+    label_size = 151
     return feparam, beparam, dbnparam, dbn2param, mirex_category, label_size
 
 

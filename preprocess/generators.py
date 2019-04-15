@@ -1,8 +1,6 @@
 # Generate training data based on the ground truth files
 # this process leverages the frontend and the ground truth data
 import os
-
-from preprocess.params import root_params
 import numpy as np
 
 from preprocess.chords import convert_gt, chord_nums_to_inds
@@ -62,7 +60,7 @@ def gen_train_data(songs_list, audio_root, gt_root, params, converted_root=None,
                                delimiter=",", fmt='%s')
             else:
                 inds_len = song_len * (param['fs'] / param['hop_size'])
-                data = np.pad(data, ((0, song_len - len(data)), (0, 0)), 'constant') if data < inds_len else data[
+                data = np.pad(data, ((0, song_len - len(data)), (0, 0)), 'constant') if len(data) < inds_len else data[
                                                                                                              :inds_len]
                 np.savetxt(converted_path + '.csv', data, delimiter=",", fmt='%s')
                 converted_list.append(converted_path + '.csv')
