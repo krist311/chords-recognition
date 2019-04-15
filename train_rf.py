@@ -27,7 +27,7 @@ def val_rf(model, val_loader, print_results=False):
         inputs, labels = data
         predicted = model.predict(inputs)
         total += labels.size(0)
-        correct += (predicted == labels).sum().item()
+        correct += (predicted == labels.numpy()).sum().item()
     acc = 100 * correct / total
     if print_results:
         print("Test acc: ", acc)
