@@ -1,13 +1,13 @@
 from sklearn.model_selection import train_test_split
 import torch
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader, Dataset, ConcatDataset
 import pandas as pd
 from numpy import genfromtxt
 
 torch.set_default_dtype(torch.float64)
 
 
-class DatasetConverted(Dataset):
+class RFDataset(Dataset):
     def __init__(self, data, transform=None):
         self.data = data
         self.transform = transform
@@ -23,12 +23,18 @@ class DatasetConverted(Dataset):
         return cqt, label
 
 
-def get_train_val_dataloader(file_path):
+def get_train_val_rf_dataloader(file_path):
     df = pd.read_csv(file_path, header=None)
-    train = df.sample(frac=0.8, random_state=200)
-    val = df.drop(train.index)
-    return DataLoader(DatasetConverted(train), batch_size=8, shuffle=True), DataLoader(DatasetConverted(val),
-                                                                                       batch_size=8, shuffle=True)
+    train_list_df = df.sample(frac=0.8, random_state=200)
+    val_list_df = df.drop(train_list_df.index)
+    train_ds_list, val_ds_list = [],[]
+    print(train_list_df.head())
+    for ds_path in train_list_df.iterrows():
+         train_ds_list.append(RFDataset(pd.read_csv(ds_path[1][0])))
+    for ds_path in val_list_df.iterrows():
+         val_ds_list.append(RFDataset(pd.read_csv(ds_path[1][0])))
+    return DataLoader(ConcatDataset(train_ds_list), batch_size=1000, shuffle=True), DataLoader(ConcatDataset(val_ds_list),
+                                                                                       batch_size=1000, shuffle=True)
 
 
 class SeqDatasetConverter(Dataset):
@@ -48,5 +54,5 @@ def get_train_val_seq_dataloader(file_path):
     df = pd.read_csv(file_path, header=None)
     train = df.sample(frac=0.8, random_state=200)
     val = df.drop(train.index)
-    return DataLoader(SeqDatasetConverter(train), batch_size=4, shuffle=True), DataLoader(SeqDatasetConverter(val),
+    return DataLoader(SeqDatasetConverter(train), batch_size=1, shuffle=True), DataLoader(SeqDatasetConverter(val),
                                                                                           batch_size=1, shuffle=True)

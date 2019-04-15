@@ -1,7 +1,7 @@
 import argparse
 
 from models import RandomForest
-from dataloader import get_train_val_dataloader
+from dataloader import get_train_val_rf_dataloader
 from preprocess.chords import preds_to_lab
 from preprocess.generators import gen_test_data, gen_train_data
 from preprocess.params import root_params
@@ -17,7 +17,7 @@ def t(model, songs_list, audio_root, params, save_path):
 
 def train_rf(data_path):
     rf = RandomForest()
-    train_loader, val_loader = get_train_val_dataloader(data_path)
+    train_loader, val_loader = get_train_val_rf_dataloader(data_path)
     for i, data in enumerate(train_loader):
         inputs, labels = data
         rf.fit(inputs, labels)
