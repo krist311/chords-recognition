@@ -6,8 +6,8 @@ import torch.nn as nn
 from tensorboardX import SummaryWriter
 from torch.autograd import Variable
 
-from models import RandomForest, LSTMClassifier
-from dataloader import get_train_val_dataloader, get_train_val_seq_dataloader
+from models import LSTMClassifier
+from dataloader import get_train_val_seq_dataloader
 from preprocess.chords import preds_to_lab
 from preprocess.generators import gen_test_data, gen_train_data
 from preprocess.params import root_params
@@ -35,21 +35,21 @@ def train_model(model, loss_criterion, train_loader, optimizer, scheduler, num_e
             loss = loss_criterion(outputs, labels)
             loss.backward()
             optimizer.step()
+            if iteration % 10 == 9:
+                # print statistics
+                running_loss += loss.item()
 
-            # print statistics
-            running_loss += loss.item()
-
-            train_acc = t_model(model, train_loader)
-            val_acc = t_model(model, val_loader)
-            av_loss = running_loss
-            if tensorboard_writer:
-                write_results(tensorboard_writer, av_loss, iteration, model, train_acc, val_acc)
-            if not silent:
-                print_results(iter_in_epoch, epoch, av_loss, train_acc, val_acc)
-            running_loss = 0
+                train_acc = val_model(model, train_loader)
+                val_acc = val_model(model, val_loader)
+                av_loss = running_loss/10
+                if tensorboard_writer:
+                    write_results(tensorboard_writer, av_loss, iteration, model, train_acc, val_acc)
+                if not silent:
+                    print_results(iter_in_epoch, epoch, av_loss, train_acc, val_acc)
+                running_loss = 0
             iteration += 1
     print('Finished Training')
-    t_model(model, val_loader, print_results=True)
+    val_loader(model, val_loader, print_results=True)
 
 
 def print_results(iter, epoch, loss, train_acc, val_acc):
@@ -66,7 +66,7 @@ def write_results(tensorboard_writer, loss, iter, model, train_acc, test_acc):
                                          iter)
 
 
-def t_model(model, test_loader, print_results=False):
+def val_model(model, test_loader, print_results=False):
     correct = 0
     total = 0
     with torch.no_grad():
@@ -103,35 +103,9 @@ def createParser():
     parser.add_argument('--category', default='MirexRoot', type=str)
     parser.add_argument('--subsong_len', default=40, type=int)
     parser.add_argument('--song_len', default=180, type=int)
+    parser.add_argument('--hidden_dim', default=200, type=int)
+    parser.add_argument('--num_layers', default=2, type=int)
     return parser
-
-
-def get_model_by_name(model_name):
-    if model_name.lower() == "rf":
-        return RandomForest()
-
-
-def train_rf(data_path):
-    rf = RandomForest()
-    train_loader, val_loader = get_train_val_dataloader(data_path)
-    for data in train_loader:
-        inputs, labels = data
-        rf.fit(inputs, labels)
-    val_rf(rf, val_loader)
-    return rf
-
-
-def val_rf(model, val_loader, print_results=False):
-    total, correct = 0, 0
-    for data in val_loader:
-        inputs, labels = data
-        predicted = model.predict(inputs)
-        total += labels.size(0)
-        correct += (predicted == labels).sum().item()
-    acc = 100 * correct / total
-    if print_results:
-        print("Test acc: ", acc)
-    return acc
 
 
 def train_LSTM(model, train_path, num_epochs, weight_decay, lr):
@@ -164,6 +138,6 @@ if __name__ == '__main__':
     if not conv_list:
         conv_list = gen_train_data(args.songs_list, args.audio_root, args.gt_root, params, args.conv_root,
                                    args.subsong_len, args.song_len)
-    model = LSTMClassifier(input_size=252, hidden_dim=200, output_size=y_size)
+    model = LSTMClassifier(input_size=252, hidden_dim=args.hidden_dim, output_size=y_size, num_layers=args.num_layers)
     train_LSTM(model, train_path=conv_list, num_epochs=args.num_epochs,
                weight_decay=args.weight_decay, lr=args.learning_rate)
