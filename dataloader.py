@@ -37,6 +37,14 @@ def get_train_val_rf_dataloader(file_path):
         batch_size=1000, shuffle=True)
 
 
+def t_rf_dataloader(file_path):
+    df = pd.read_csv(file_path, header=None, sep=' ')
+    val_ds_list = []
+    for ds_path in df.iterrows():
+        val_ds_list.append(RFDataset(pd.read_csv(ds_path[1][0])))
+    return DataLoader(ConcatDataset(val_ds_list), batch_size=1000, shuffle=True)
+
+
 class SeqDatasetConverter(Dataset):
     def __init__(self, data_list):
         self.data_list = data_list
