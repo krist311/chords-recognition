@@ -24,17 +24,18 @@ class RFDataset(Dataset):
 
 
 def get_train_val_rf_dataloader(file_path):
-    df = pd.read_csv(file_path, header=None)
+    df = pd.read_csv(file_path, header=None, sep=' ')
     train_list_df = df.sample(frac=0.8, random_state=200)
     val_list_df = df.drop(train_list_df.index)
-    train_ds_list, val_ds_list = [],[]
+    train_ds_list, val_ds_list = [], []
     print(train_list_df.head())
     for ds_path in train_list_df.iterrows():
-         train_ds_list.append(RFDataset(pd.read_csv(ds_path[1][0])))
+        train_ds_list.append(RFDataset(pd.read_csv(ds_path[1][0])))
     for ds_path in val_list_df.iterrows():
-         val_ds_list.append(RFDataset(pd.read_csv(ds_path[1][0])))
-    return DataLoader(ConcatDataset(train_ds_list), batch_size=1000, shuffle=True), DataLoader(ConcatDataset(val_ds_list),
-                                                                                       batch_size=1000, shuffle=True)
+        val_ds_list.append(RFDataset(pd.read_csv(ds_path[1][0])))
+    return DataLoader(ConcatDataset(train_ds_list), batch_size=1000, shuffle=True), DataLoader(
+        ConcatDataset(val_ds_list),
+        batch_size=1000, shuffle=True)
 
 
 class SeqDatasetConverter(Dataset):
@@ -51,7 +52,7 @@ class SeqDatasetConverter(Dataset):
 
 
 def get_train_val_seq_dataloader(file_path):
-    df = pd.read_csv(file_path, header=None)
+    df = pd.read_csv(file_path, header=None, sep=' ')
     train = df.sample(frac=0.8, random_state=200)
     val = df.drop(train.index)
     return DataLoader(SeqDatasetConverter(train), batch_size=4, shuffle=True), DataLoader(SeqDatasetConverter(val),

@@ -59,7 +59,7 @@ def gen_train_data(songs_list, audio_root, gt_root, params, converted_root=None,
                     np.savetxt(f"{converted_path}_part{i}.csv", data_part,
                                delimiter=",", fmt='%s')
             else:
-                inds_len = song_len * (param['fs'] / param['hop_size'])
+                inds_len = int(song_len * (param['fs'] / param['hop_size']))
                 data = np.pad(data, ((0, song_len - len(data)), (0, 0)), 'constant') if len(data) < inds_len else data[
                                                                                                              :inds_len]
                 np.savetxt(converted_path + '.csv', data, delimiter=",", fmt='%s')
