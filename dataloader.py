@@ -37,7 +37,7 @@ def get_train_val_rf_dataloader(file_path):
         batch_size=1000, shuffle=True)
 
 
-def t_rf_dataloader(file_path):
+def get_test_rf_dataloader(file_path):
     df = pd.read_csv(file_path, header=None, sep=' ')
     val_ds_list = []
     for ds_path in df.iterrows():
