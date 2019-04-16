@@ -3,6 +3,7 @@
 # Datasets
 - [TheBeatles180 Isophonics dataset](http://www.isophonics.net/content/reference-annotations-beatles) 
   - [audio](https://drive.google.com/open?id=1WzdcHeLeFHrYu_2_NDTEEglfrKLLKc1c) - extract in <i>data/audio</i>
+  - [gt](https://drive.google.com/open?id=1EK59lTqt6iXN7ykdZXJyrYLuHmws36lh) - extract in <i>data</i>
   - [converted](https://drive.google.com/open?id=1Yh4dBJqtYkN7Hy5qp8E-dKeITX9D38I_) - extract in <i>data/converted</i>
   - [converted_list](https://drive.google.com/open?id=1E-TVqZvlFIJ2KzxmkkdhPxlKXxzQAcZJ) - extract to root folder
 # Structure of repo:
