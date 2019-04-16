@@ -24,19 +24,22 @@ def get_params_by_category(category):
     return params, y_size
 
 
-def createParser():
+def create_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', default='pretrained/RF_MirexRoot_TheBeatles180.pkl', type=str)
+    parser.add_argument('--songs_list', default='data/tracklists/TheBeatles180List', type=str)
     parser.add_argument('--audio_root', default='data/audio/', type=str)
     parser.add_argument('--gt_root', default='data/gt/', type=str)
     parser.add_argument('--conv_root', default='data/converted/', type=str)
     parser.add_argument('--conv_list', default='TheBeatles1List_converted.txt', type=str)
     parser.add_argument('--category', default='MirexRoot', type=str)
+    parser.add_argument('--subsong_len', default=40, type=int)
+    parser.add_argument('--song_len', default=180, type=int)
     return parser
 
 
 if __name__ == '__main__':
-    parser = createParser()
+    parser = create_parser()
     args = parser.parse_args(sys.argv[1:])
     model_dump = open(args.model, 'rb')
     model = pickle.load(model_dump)

@@ -20,13 +20,12 @@ def get_params_by_category(category):
     return params
 
 
-def createParser():
+def create_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--songs_list', default='data/tracklists/TheBeatles180List', type=str)
     parser.add_argument('--audio_root', default='data/audio/', type=str)
     parser.add_argument('--gt_root', default='data/gt/', type=str)
     parser.add_argument('--conv_root', default='data/converted/', type=str)
-    parser.add_argument('--conv_list', default='', type=str)
     parser.add_argument('--category', default='MirexRoot', type=str)
     parser.add_argument('--subsong_len', default=40, type=int)
     parser.add_argument('--song_len', default=180, type=int)
@@ -34,7 +33,7 @@ def createParser():
 
 
 if __name__ == '__main__':
-    parser = createParser()
+    parser = create_parser()
     args = parser.parse_args(sys.argv[1:])
     params = get_params_by_category(args.category)
     conv_list = gen_train_data(args.songs_list, args.audio_root, args.gt_root, params, args.conv_root,
