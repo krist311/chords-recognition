@@ -31,7 +31,7 @@ train_nn.py --model LSTM
 --audio_root, default: data/audio/<br>
 --gt_root, default: data/gt/<br>
 --conv_root, default: data/converted/, determins folder where converted datasets will be saved<br>
---conv_list, if specified, converted audio from list will be used for model and convertation process will be skipped<br>
+--conv_list, if specified, converted audio from list will be used for fitting model and convertation process will be skipped<br>
 --category, default: MirexRoot<br>
 --subsong_len, default: 40, length of song part in seconds to be splitted during preprocess<br> 
 --song_len, default: 180 if <i>subsong_len</i> is not specified, song will be cutted or zeropaded to <i>song_len</i><br> 
@@ -40,16 +40,29 @@ train_nn.py --model LSTM
 ## Random forest
   <br>Accuracy on test-set: Mirex_Root:55% (learned 30% of TheBeatles180 dataset)<br>
 ### How to use:
+#### Train
 train_rf.py
-#### Optional parameters:
+##### Optional parameters:
 --songs_list, default: data/tracklists/TheBeatles180List<br>
 --audio_root, default: data/audio/<br>
 --gt_root, default: data/gt/<br>
 --conv_root, default: data/converted/, determins folder where converted datasets will be saved<br>
---conv_list, if specified, converted audio from list will be used for model and convertation process will be skipped<br>
+--conv_list, if specified, converted audio from list will be used for fitting model and convertation process will be skipped<br>
 --category, default: MirexRoot<br>
 --subsong_len, default: 40, length of song part in seconds to be splitted during preprocess<br>
 --song_len, default: 180 if <i>subsong_len</i> is not specified, song will be cutted or zeropaded to <i>song_len</i><br> 
 --criterion, default: entropy<br>
 --max_features, default: log2<br>
 --n_estimators, default: 1<br>
+#### Test
+test_rf.py --model [Pretrained model in cPickle format]
+##### Optional parameters:
+--model default: pretrained/RF_MirexRoot_TheBeatles180.pkl, pretrained model in cPickle format<br>
+--songs_list, default: data/tracklists/TheBeatles180List<br>
+--audio_root, default: data/audio/<br>
+--gt_root, default: data/gt/<br>
+--conv_root, default: data/converted/, determins folder where converted datasets will be saved<br>
+--conv_list, if specified, converted audio from list will be used for fitting model and convertation process will be skipped<br>
+--category, default: MirexRoot<br>
+--subsong_len, default: 40, length of song part in seconds to be splitted during preprocess<br>
+--song_len, default: 180 if <i>subsong_len</i> is not specified, song will be cutted or zeropaded to <i>song_len</i><br> 
