@@ -1,93 +1,41 @@
+import torch
 import torch.nn as nn
+from sklearn.ensemble import RandomForestClassifier
+from torch import autograd
 import torch.nn.functional as F
 
-
-class MLP(nn.Module):
-    def __init__(self):
-        super(MLP, self).__init__()
-        self.fc1 = nn.Linear(32 * 32 * 3, 1000)
-        self.bn1 = nn.BatchNorm1d(1000)
-        self.fc2 = nn.Linear(1000, 500)
-        self.bn2 = nn.BatchNorm1d(500)
-        self.fc3 = nn.Linear(500, 120)
-        self.bn3 = nn.BatchNorm1d(120)
-        self.fc4 = nn.Linear(120, 84)
-        self.bn4 = nn.BatchNorm1d(84)
-        self.fc5 = nn.Linear(84, 10)
-
-    def forward(self, x):
-        x = x.view(-1, 32 * 32 * 3)
-        x = F.relu(self.bn1(self.fc1(x)))
-        x = F.relu(self.bn2(self.fc2(x)))
-        x = F.relu(self.bn3(self.fc3(x)))
-        x = F.relu(self.bn4(self.fc4(x)))
-        x = self.fc5(x)
-        return x
+torch.set_default_dtype(torch.float64)
 
 
-def conv3x3(in_channels, out_channels, stride=1):
-    return nn.Conv2d(in_channels, out_channels, kernel_size=3,
-                     stride=stride, padding=1, bias=False)
+class LSTMClassifier(nn.Module):
+    # input_size hidden_size num_layers
+    def __init__(self, input_size, hidden_dim, output_size, num_layers):
+        super(LSTMClassifier, self).__init__()
+        self.input_size = input_size
+        self.hidden_dim = hidden_dim
+        self.num_layers = num_layers
+        self.lstm = nn.LSTM(input_size, hidden_dim, num_layers=self.num_layers)
+
+        self.hidden2out = nn.Linear(hidden_dim, output_size)
+        # self.dropout_layer = nn.Dropout(p=0.2)
+
+    def init_hidden(self, batch_size):
+        return (autograd.Variable(torch.zeros(self.num_layers, batch_size, self.hidden_dim, dtype=torch.float64)),
+                autograd.Variable(torch.zeros(self.num_layers, batch_size, self.hidden_dim, dtype=torch.float64)))
+
+    def forward(self, batch):
+        self.hidden = self.init_hidden(batch.size(0))
+        # (seq_len, batch_size, input_size)
+        batch = batch.view(batch.shape[1], batch.shape[0], batch.shape[2])
+        outputs, self.hidden = self.lstm(batch, self.hidden)
+        # output = self.dropout_layer(outputs)
+        output = self.hidden2out(outputs)
+        output = F.log_softmax(output, dim=2)
+        output = output.view(output.size(1), output.size(2), output.size(0))
+        return output
 
 
-# Residual block
-class ResidualBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, stride=1, downsample=None):
-        super(ResidualBlock, self).__init__()
-        self.conv1 = conv3x3(in_channels, out_channels, stride)
-        self.bn1 = nn.BatchNorm2d(out_channels)
-        self.relu = nn.ReLU(inplace=True)
-        self.conv2 = conv3x3(out_channels, out_channels)
-        self.bn2 = nn.BatchNorm2d(out_channels)
-        self.downsample = downsample
-
-    def forward(self, x):
-        residual = x
-        out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
-        out = self.conv2(out)
-        out = self.bn2(out)
-        if self.downsample:
-            residual = self.downsample(x)
-        out += residual
-        out = self.relu(out)
-        return out
-
-
-class ResNet(nn.Module):
-    def __init__(self, num_classes=10):
-        super(ResNet, self).__init__()
-        self.in_channels = 16
-        self.conv = conv3x3(3, 16)
-        self.bn = nn.BatchNorm2d(16)
-        self.relu = nn.ReLU(inplace=True)
-        self.layer1 = self.make_layer(ResidualBlock, 16, blocks=2)
-        self.layer2 = self.make_layer(ResidualBlock, 32, blocks=2, stride=2)
-        self.layer3 = self.make_layer(ResidualBlock, 64, blocks=2, stride=2)
-        self.avg_pool = nn.AvgPool2d(8)
-        self.fc = nn.Linear(64, num_classes)
-
-    def make_layer(self, block, out_channels, blocks, stride=1):
-        downsample = None
-        if (stride != 1) or (self.in_channels != out_channels):
-            downsample = nn.Sequential(
-                conv3x3(self.in_channels, out_channels, stride=stride),
-                nn.BatchNorm2d(out_channels))
-        layers = []
-        layers.append(block(self.in_channels, out_channels, stride, downsample))
-        self.in_channels = out_channels
-        for i in range(1, blocks):
-            layers.append(block(out_channels, out_channels))
-        return nn.Sequential(*layers)
-
-    def forward(self, x):
-        out = self.conv(x)
-        out = self.bn(out)
-        out = self.layer1(out)
-        out = self.layer2(out)
-        out = self.layer3(out)
-        out = self.avg_pool(out)
-        out = out.view(out.size(0), -1)
-        out = self.fc(out)
-        return out
+class RandomForest(RandomForestClassifier):
+    def __init__(self, criterion, max_features, n_estimators):
+        super(RandomForest, self).__init__(criterion=criterion, max_features=max_features, n_estimators=n_estimators,
+                                           warm_start=True)
