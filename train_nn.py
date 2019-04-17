@@ -136,6 +136,6 @@ if __name__ == '__main__':
     if not conv_list:
         conv_list = gen_train_data(args.songs_list, args.audio_root, args.gt_root, params, args.conv_root,
                                    args.subsong_len, args.song_len)
-    model = LSTMClassifier(input_size=252, hidden_dim=args.hidden_dim, output_size=y_size, num_layers=args.num_layers)
+    model = LSTMClassifier(input_size=252, hidden_dim=args.hidden_dim, output_size=y_size, num_layers=args.num_layers, use_gpu = use_gpu)
     train_LSTM(model, train_path=conv_list, num_epochs=args.num_epochs,
                weight_decay=args.weight_decay, lr=args.learning_rate)

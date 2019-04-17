@@ -9,8 +9,9 @@ torch.set_default_dtype(torch.float64)
 
 class LSTMClassifier(nn.Module):
     # input_size hidden_size num_layers
-    def __init__(self, input_size, hidden_dim, output_size, num_layers):
+    def __init__(self, input_size, hidden_dim, output_size, num_layers, use_gpu):
         super(LSTMClassifier, self).__init__()
+        self.use_gpu = use_gpu
         self.input_size = input_size
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
@@ -20,7 +21,13 @@ class LSTMClassifier(nn.Module):
         # self.dropout_layer = nn.Dropout(p=0.2)
 
     def init_hidden(self, batch_size):
-        return (autograd.Variable(torch.zeros(self.num_layers, batch_size, self.hidden_dim, dtype=torch.float64)),
+        if self.use_gpu:
+            return (
+                autograd.Variable(torch.zeros(self.num_layers, batch_size, self.hidden_dim, dtype=torch.float64).cuda()),
+                autograd.Variable(torch.zeros(self.num_layers, batch_size, self.hidden_dim, dtype=torch.float64).cuda()))
+        else:
+            return (
+                autograd.Variable(torch.zeros(self.num_layers, batch_size, self.hidden_dim, dtype=torch.float64)),
                 autograd.Variable(torch.zeros(self.num_layers, batch_size, self.hidden_dim, dtype=torch.float64)))
 
     def forward(self, batch):
