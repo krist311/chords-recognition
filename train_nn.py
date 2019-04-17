@@ -70,6 +70,10 @@ def val_model(model, test_loader, print_results=False):
     with torch.no_grad():
         for data in test_loader:
             inputs, labels = data
+            if use_gpu:
+                inputs, labels = Variable(inputs.cuda()), labels.cuda()
+            else:
+                inputs = Variable(inputs)
             outputs = model(inputs)
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)*labels.size(1)
