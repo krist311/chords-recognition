@@ -29,17 +29,14 @@ def train_model(model, loss_criterion, train_loader, optimizer, scheduler, num_e
                 inputs, labels = Variable(inputs.cuda()), labels.cuda()
             else:
                 inputs = Variable(inputs)
-            optimizer.zero_grad()
             model.zero_grad()
             outputs = model(inputs)
             loss = loss_criterion(outputs, labels)
             loss.backward()
             optimizer.step()
-            val_model(model, train_loader)
             if iteration % 10 == 9:
-                # print statistics
+            # print statistics
                 running_loss += loss.item()
-
                 train_acc = val_model(model, train_loader)
                 val_acc = val_model(model, val_loader)
                 av_loss = running_loss/10
@@ -50,7 +47,7 @@ def train_model(model, loss_criterion, train_loader, optimizer, scheduler, num_e
                 running_loss = 0
             iteration += 1
     print('Finished Training')
-    val_loader(model, val_loader, print_results=True)
+    val_model(model, val_loader, print_results=True)
 
 
 def print_results(iter, epoch, loss, train_acc, val_acc):
@@ -114,7 +111,7 @@ def train_LSTM(model, train_path, num_epochs, weight_decay, lr):
         model = model.cuda()
     train_loader, val_loader = get_train_val_seq_dataloader(train_path)
     writer = SummaryWriter('logs/' + 'LSTM')
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.NLLLoss()
     optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
     train_model(model, criterion, train_loader, optimizer, scheduler, num_epochs=num_epochs,

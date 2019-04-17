@@ -1,3 +1,4 @@
+import sklearn
 from sklearn.model_selection import train_test_split
 import torch
 from torch.utils.data import DataLoader, Dataset, ConcatDataset
@@ -55,7 +56,7 @@ class SeqDatasetConverter(Dataset):
     def __getitem__(self, index):
         song_data = genfromtxt(self.data_list.iloc[index, 0], delimiter=',', dtype=float)
         # song_data = torch.from_numpy(song_data)
-        return song_data[:, :-1], torch.from_numpy(song_data[:, -1]).long()
+        return sklearn.preprocessing.normalize(song_data[:, :-1]), torch.from_numpy(song_data[:, -1]).long()
 
 
 def get_train_val_seq_dataloader(file_path):
