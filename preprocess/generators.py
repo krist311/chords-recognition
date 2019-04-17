@@ -15,14 +15,14 @@ def iter_songs_list(songs_list):
             yield song_title, song_folder
 
 
-def gen_test_data(songs_list, audio_root, params):
+def gen_test_data(songs_list, audio_root, params, use_librosa):
     songs = []
     for song_name, audio_path in iter_songs_list(songs_list):
-        songs.append((song_name, preprocess_audio(audio_path, params)))
+        songs.append((song_name, preprocess_audio(audio_path, params, use_librosa)))
     return songs
 
 
-def gen_train_data(songs_list, audio_root, gt_root, params, converted_root=None, subsong_len=None, song_len=180):
+def gen_train_data(songs_list, audio_root, gt_root, params, converted_root=None, subsong_len=None, song_len=180, use_librosa=False):
     def split(data, subsong_len):
         # convert len in seconds to indexes
         inds_len = int(subsong_len * (param['fs'] / param['hop_size']))
@@ -41,7 +41,7 @@ def gen_train_data(songs_list, audio_root, gt_root, params, converted_root=None,
     X, y = [], []
     for song_title, audio_path in iter_songs_list(songs_list):
         print('collecting training data of ', song_title)
-        X_song = preprocess_audio(f'{audio_root}/{audio_path}', param)
+        X_song = preprocess_audio(f'{audio_root}/{audio_path}', param, use_librosa)
         # ** ** ** map audio content to gt ** ** **
         y_nums, inds_to_remove = convert_gt(f'{gt_root}/{song_title}.lab', param['hop_size'], param['fs'], len(X_song),
                                             category)

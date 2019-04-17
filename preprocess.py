@@ -29,6 +29,7 @@ def create_parser():
     parser.add_argument('--category', default='MirexRoot', type=str)
     parser.add_argument('--subsong_len', default=40, type=int)
     parser.add_argument('--song_len', default=180, type=int)
+    parser.add_argument('--use_librosa', default=False, type=bool)
     return parser
 
 
@@ -37,5 +38,5 @@ if __name__ == '__main__':
     args = parser.parse_args(sys.argv[1:])
     params = get_params_by_category(args.category)
     conv_list = gen_train_data(args.songs_list, args.audio_root, args.gt_root, params, args.conv_root,
-                               args.subsong_len, args.song_len)
+                               args.subsong_len, args.song_len, use_librosa=args.use_librosa)
     print(conv_list)

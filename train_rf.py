@@ -18,6 +18,9 @@ def train_rf(model, data_path):
             train_acc = val_rf(model, train_loader)
             val_acc = val_rf(model, val_loader)
             print_results(i, train_acc, val_acc)
+    train_acc = val_rf(model, train_loader)
+    val_acc = val_rf(model, val_loader)
+    print_results(99, train_acc, val_acc)
     return model
 
 

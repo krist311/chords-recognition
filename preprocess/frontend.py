@@ -9,8 +9,11 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import normalize
 
 
-def preprocess_audio(audiopath, feparam):
-    x, _ = librosa.load(audiopath, feparam['fs'], mono=feparam['stereo_to_mono'])
+def preprocess_audio(audiopath, feparam, use_librosa):
+    x, sr = librosa.load(audiopath, feparam['fs'], mono=feparam['stereo_to_mono'])
+    if use_librosa:
+        X = np.abs(librosa.core.cqt(x, sr=sr, tuning=None, window='hamming'))
+        return X
     # we differentiate tone and note in this program
     # by tone we mean 1 / 3 - semitone - wise frequency, by note we mean semitone - wise frequency
     fmin = 27.5  # MIDI note 21, Piano key number 1(A0)
@@ -135,7 +138,6 @@ def toneProfileGen(s, wl, numtones, numsemitones, fmin, fmax, fratio, fs):
     return Ms, Mc
 
 
-
 def phase_tuning(S):
     """tuning based on phase information
     assuming nsemitones = 3"""
@@ -159,7 +161,6 @@ def phase_tuning(S):
     # nslices * ntones, the edge values are just interpolated as zeros
     S = tuning_update(S, et)
     return S, et
-
 
 
 def tuning_update(S, et):
@@ -192,6 +193,7 @@ def tuning_update(S, et):
         yi = interp1d(x, y, kind='linear', fill_value='extrapolate')(xi)
         S[:, j] = yi
     return S
+
 
 def wrapd(angle):
     """Wrapped phase means that all phase points are constrained to the range
