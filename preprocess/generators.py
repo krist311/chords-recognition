@@ -41,7 +41,7 @@ def gen_train_data(songs_list, audio_root, gt_root, params, converted_root=None,
     X, y = [], []
     for song_title, audio_path in iter_songs_list(songs_list):
         print('collecting training data of ', song_title)
-        X_song = preprocess_audio(f'{audio_root}/{audio_path}', param, use_librosa)
+        X_song = preprocess_audio(f'{audio_root}/{audio_path}', param, use_librosa).T
         # ** ** ** map audio content to gt ** ** **
         y_nums, inds_to_remove = convert_gt(f'{gt_root}/{song_title}.lab', param['hop_size'], param['fs'], len(X_song),
                                             category)
