@@ -4,7 +4,6 @@ import torch
 import torch.optim as optim
 import torch.nn as nn
 from tensorboardX import SummaryWriter
-from torch.autograd import Variable
 
 from models import LSTMClassifier
 from dataloader import get_train_val_seq_dataloader
@@ -22,36 +21,37 @@ def train_model(model, loss_criterion, train_loader, optimizer, scheduler, num_e
     for epoch in range(num_epochs):
         running_loss = 0.0
         iteration = 0
-        scheduler.step()
         for iter_in_epoch, data in enumerate(train_loader, 0):
             inputs, labels = data
             if use_gpu:
-                inputs, labels = Variable(inputs.cuda()), labels.cuda()
-            else:
-                inputs = Variable(inputs)
+                inputs, labels = inputs.cuda(), labels.cuda()
             model.zero_grad()
             outputs = model(inputs)
+            outputs = outputs.view(-1, outputs.size(2))
+            labels = labels.view(-1)
             loss = loss_criterion(outputs, labels)
+            optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+            running_loss += loss.item()
             if iteration % 10 == 9:
-            # print statistics
-                running_loss += loss.item()
+                # print statistics
                 train_acc = val_model(model, train_loader)
                 val_acc = val_model(model, val_loader)
-                av_loss = running_loss/10
+                av_loss = running_loss
                 if tensorboard_writer:
                     write_results(tensorboard_writer, av_loss, iteration, model, train_acc, val_acc)
                 if not silent:
                     print_results(iter_in_epoch, epoch, av_loss, train_acc, val_acc)
                 running_loss = 0
             iteration += 1
+            scheduler.step()
     print('Finished Training')
     val_model(model, val_loader, print_results=True)
 
 
 def print_results(iter, epoch, loss, train_acc, val_acc):
-    print('[%d, %5d] loss: %.3f train_acc: %.3f, val_acc: %.3f' %
+    print('[%d, %5d] loss: %f train_acc: %.3f, val_acc: %.3f' %
           (epoch + 1, iter + 1, loss, train_acc, val_acc))
 
 
@@ -65,20 +65,18 @@ def write_results(tensorboard_writer, loss, iter, model, train_acc, test_acc):
 
 
 def val_model(model, test_loader, print_results=False):
-    correct = 0
-    total = 0
+    correct,total,acc = 0,0,0
     with torch.no_grad():
         for data in test_loader:
             inputs, labels = data
             if use_gpu:
-                inputs, labels = Variable(inputs.cuda()), labels.cuda()
-            else:
-                inputs = Variable(inputs)
+                inputs, labels = inputs.cuda(), labels.cuda()
             outputs = model(inputs)
-            _, predicted = torch.max(outputs.data, 1)
-            total += labels.size(0)*labels.size(1)
+            predicted = outputs.topk(1, dim=2)[1].squeeze()
+            total += labels.size(0) * labels.size(1)
             correct += (predicted == labels).sum().item()
-    acc = 100 * correct / total
+    if total:
+        acc = 100 * correct / total
     if print_results:
         print("Val acc: ", acc)
     return acc
@@ -140,6 +138,7 @@ if __name__ == '__main__':
     if not conv_list:
         conv_list = gen_train_data(args.songs_list, args.audio_root, args.gt_root, params, args.conv_root,
                                    args.subsong_len, args.song_len)
-    model = LSTMClassifier(input_size=252, hidden_dim=args.hidden_dim, output_size=y_size, num_layers=args.num_layers, use_gpu = use_gpu)
+    model = LSTMClassifier(input_size=84, hidden_dim=args.hidden_dim, output_size=y_size, num_layers=args.num_layers,
+                           use_gpu=use_gpu)
     train_LSTM(model, train_path=conv_list, num_epochs=args.num_epochs,
                weight_decay=args.weight_decay, lr=args.learning_rate)
