@@ -17,7 +17,7 @@ use_gpu = torch.cuda.is_available()
 
 
 def train_model(model, loss_criterion, train_loader, optimizer, scheduler, num_epochs, tensorboard_writer=None,
-                silent=False, val_loader=None):
+                silent=False, val_loader=None, test_every=10):
     for epoch in range(num_epochs):
         running_loss = 0.0
         iteration = 0
@@ -34,11 +34,11 @@ def train_model(model, loss_criterion, train_loader, optimizer, scheduler, num_e
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
-            if iteration % 10 == 9:
+            if iteration % test_every == test_every-1:
                 # print statistics
                 train_acc = val_model(model, train_loader)
                 val_acc = val_model(model, val_loader)
-                av_loss = running_loss
+                av_loss = running_loss/test_every
                 if tensorboard_writer:
                     write_results(tensorboard_writer, av_loss, iteration, model, train_acc, val_acc)
                 if not silent:
@@ -65,7 +65,7 @@ def write_results(tensorboard_writer, loss, iter, model, train_acc, test_acc):
 
 
 def val_model(model, test_loader, print_results=False):
-    correct,total,acc = 0,0,0
+    correct, total, acc = 0, 0, 0
     with torch.no_grad():
         for data in test_loader:
             inputs, labels = data
@@ -105,20 +105,22 @@ def createParser():
     parser.add_argument('--song_len', default=180, type=int)
     parser.add_argument('--hidden_dim', default=200, type=int)
     parser.add_argument('--num_layers', default=2, type=int)
+    parser.add_argument('--batch_size', default=4, type=int)
+    parser.add_argument('--test_every', default=10, type=int)
     return parser
 
 
-def train_LSTM(model, train_path, num_epochs, weight_decay, lr):
+def train_LSTM(model, train_path, num_epochs, weight_decay, lr, batch_size=4, test_every=10):
     if use_gpu:
         model = model.cuda()
-    train_loader, val_loader = get_train_val_seq_dataloader(train_path)
+    train_loader, val_loader = get_train_val_seq_dataloader(train_path, batch_size)
     writer = SummaryWriter('logs/' + 'LSTM')
     criterion = nn.NLLLoss()
     optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
     train_model(model, criterion, train_loader, optimizer, scheduler, num_epochs=num_epochs,
                 tensorboard_writer=writer,
-                val_loader=val_loader)
+                val_loader=val_loader, test_every=test_every)
     return model
 
 
@@ -141,4 +143,5 @@ if __name__ == '__main__':
     model = LSTMClassifier(input_size=84, hidden_dim=args.hidden_dim, output_size=y_size, num_layers=args.num_layers,
                            use_gpu=use_gpu)
     train_LSTM(model, train_path=conv_list, num_epochs=args.num_epochs,
-               weight_decay=args.weight_decay, lr=args.learning_rate)
+               weight_decay=args.weight_decay, lr=args.learning_rate, batch_size=args.batch_size,
+               test_every=args.test_every)
