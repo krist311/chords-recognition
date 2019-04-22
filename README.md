@@ -13,10 +13,17 @@
   - <b>converted</b> - default folder for the saving preprocessed data in csv format
   - <b>gt</b> - contains .lab files with chords
   - <b>tracklists</b> - contains lists of paths to audio files starting with 'audio_root' parameter
+# Installation
+Download raw and converted datasets
+```
+bash ./data/download.sh
+```
 # Preprocessing
 System computes notegramms (252 bins per sample) as described in Mauch 2010 (p.98) with <b>hop_length</b>=512, <b>sample_rate</b>=11025, <b>window_size</b>=4096
 ### How to use:
-preprocess.py 
+```
+python preprocess.py
+```
 #### Optional parameters:
 --songs_list, default: data/tracklists/TheBeatles180List<br>
 --audio_root, default: data/audio/<br>
@@ -25,11 +32,14 @@ preprocess.py
 --category, default: MirexRoot<br>
 --subsong_len, default: 40, length of song part in seconds to be splitted during preprocess<br> 
 --song_len, default: 180 if <i>subsong_len</i> is not specified, song will be cutted or zeropaded to <i>song_len</i><br> 
+--use_librosa, default: True
 # Models:
 ## LSTM
   <br>Accuracy on test-set: to be determined
 ### How to use:
-train_nn.py --model LSTM
+```
+python train_nn.py --model LSTM
+```
 #### Optional parameters:
 --num_epochs, default: 2<br>
 --learning_rate, default: 0.01<br>
@@ -45,12 +55,16 @@ train_nn.py --model LSTM
 --hidden_dim, default: 200<br>
 --num_layers, default: 2<br>
 --batch_size, default: 4<br>
---test_every, default:10, test model on train and val datasets every n iterations
+--test_every, default:10, test model on train and val datasets every n iterations <br>
+--use_librosa, default: True <br>
+--save_model_as, if specified, model will be saved in <i>pretrained</i> folder 
 ## Random forest
-  <br>Accuracy on test-set: Mirex_Root:55% (learned 30% of TheBeatles180 dataset)<br>
+  <br>Accuracy on test-set: Mirex_Root:55%<br>
 ### How to use:
 #### Train
-train_rf.py
+```
+python train_rf.py
+```
 ##### Optional parameters:
 --songs_list, default: data/tracklists/TheBeatles180List<br>
 --audio_root, default: data/audio/<br>
@@ -64,9 +78,10 @@ train_rf.py
 --max_features, default: log2<br>
 --n_estimators, default: 1<br>
 #### Test
-test_rf.py --model [Pretrained model in cPickle format]
+```
+python test_rf.py -- model pretrained/RF_MirexRoot_TheBeatles180_librosa.pkl --conv_root, default: data/converted/librosa
+```
 ##### Optional parameters:
---model default: pretrained/RF_MirexRoot_TheBeatles180.pkl, pretrained model in cPickle format<br>
 --songs_list, default: data/tracklists/TheBeatles180List<br>
 --audio_root, default: data/audio/<br>
 --gt_root, default: data/gt/<br>
