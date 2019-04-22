@@ -22,10 +22,9 @@ bash ./data/download.sh
 System computes notegramms (252 bins per sample) as described in Mauch 2010 (p.98) with <b>hop_length</b>=512, <b>sample_rate</b>=11025, <b>window_size</b>=4096
 ### How to use:
 ```
-python preprocess.py
+python preprocess.py --songs_list data/tracklists/TheBeatles180List
 ```
 #### Optional parameters:
---songs_list, default: data/tracklists/TheBeatles180List<br>
 --audio_root, default: data/audio/<br>
 --gt_root, default: data/gt/<br>
 --conv_root, default: data/converted/, determins folder where converted datasets will be saved<br>
@@ -79,7 +78,7 @@ python train_rf.py
 --n_estimators, default: 1<br>
 #### Test
 ```
-python test_rf.py --model pretrained/RF_MirexRoot_TheBeatles180_librosa.pkl --conv_root, default: data/converted/librosa
+python test_rf.py --model pretrained/RF_MirexRoot_TheBeatles180_librosa.pkl --conv_root data/converted/librosa --conv_list TheBeatles180List_converted.txt
 ```
 ##### Optional parameters:
 --songs_list, default: data/tracklists/TheBeatles180List<br>
