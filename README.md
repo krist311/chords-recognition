@@ -79,7 +79,7 @@ python train_rf.py
 --n_estimators, default: 1<br>
 #### Test
 ```
-python test_rf.py -- model pretrained/RF_MirexRoot_TheBeatles180_librosa.pkl --conv_root, default: data/converted/librosa
+python test_rf.py --model pretrained/RF_MirexRoot_TheBeatles180_librosa.pkl --conv_root, default: data/converted/librosa
 ```
 ##### Optional parameters:
 --songs_list, default: data/tracklists/TheBeatles180List<br>
