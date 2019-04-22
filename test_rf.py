@@ -30,7 +30,7 @@ def create_parser():
     parser.add_argument('--songs_list', default='data/tracklists/TheBeatles180List', type=str)
     parser.add_argument('--audio_root', default='data/audio/', type=str)
     parser.add_argument('--gt_root', default='data/gt/', type=str)
-    parser.add_argument('--conv_root', default='data/converted/librosa/', type=str)
+    parser.add_argument('--conv_root', type=str)
     parser.add_argument('--conv_list', default='TheBeatles180List_converted.txt', type=str)
     parser.add_argument('--category', default='MirexRoot', type=str)
     parser.add_argument('--subsong_len', default=40, type=int)

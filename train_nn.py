@@ -108,6 +108,7 @@ def createParser():
     parser.add_argument('--batch_size', default=4, type=int)
     parser.add_argument('--test_every', default=10, type=int)
     parser.add_argument('--use_librosa', default=True, type=bool)
+    parser.add_argument('--save_model_as', type=str)
     return parser
 
 
