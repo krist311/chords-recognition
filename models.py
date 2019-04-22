@@ -38,4 +38,4 @@ class LSTMClassifier(nn.Module):
 class RandomForest(RandomForestClassifier):
     def __init__(self, criterion, max_features, n_estimators):
         super(RandomForest, self).__init__(criterion=criterion, max_features=max_features, n_estimators=n_estimators,
-                                           warm_start=True)
+                                           warm_start=True, n_jobs=-1)

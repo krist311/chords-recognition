@@ -78,6 +78,7 @@ def createParser():
     parser.add_argument('--criterion', default='entropy', type=str)
     parser.add_argument('--max_features', default='log2', type=str)
     parser.add_argument('--n_estimators', default='1', type=int)
+    parser.add_argument('--use_librosa', default=True, type=bool)
     return parser
 
 
@@ -86,6 +87,11 @@ if __name__ == '__main__':
     args = parser.parse_args(sys.argv[1:])
     # prepare train dataset
     params, y_size = get_params_by_category(args.category)
+    conv_root = args.conv_root
+    if args.use_librosa:
+        conv_root = conv_root + '/librosa/'
+    else:
+        conv_root = conv_root + '/mauch/'
     conv_list = args.conv_list
     if not conv_list:
         conv_list = gen_train_data(args.songs_list, args.audio_root, args.gt_root, params, args.conv_root,

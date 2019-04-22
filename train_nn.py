@@ -34,11 +34,11 @@ def train_model(model, loss_criterion, train_loader, optimizer, scheduler, num_e
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
-            if iteration % test_every == test_every-1:
+            if iteration % test_every == test_every - 1:
                 # print statistics
                 train_acc = val_model(model, train_loader)
                 val_acc = val_model(model, val_loader)
-                av_loss = running_loss/test_every
+                av_loss = running_loss / test_every
                 if tensorboard_writer:
                     write_results(tensorboard_writer, av_loss, iteration, model, train_acc, val_acc)
                 if not silent:
@@ -107,12 +107,18 @@ def createParser():
     parser.add_argument('--num_layers', default=2, type=int)
     parser.add_argument('--batch_size', default=4, type=int)
     parser.add_argument('--test_every', default=10, type=int)
+    parser.add_argument('--use_librosa', default=True, type=bool)
     return parser
 
 
 def train_LSTM(model, train_path, num_epochs, weight_decay, lr, batch_size=4, test_every=10):
     if use_gpu:
         model = model.cuda()
+    conv_root = args.conv_root
+    if args.use_librosa:
+        conv_root= conv_root + '/librosa/'
+    else:
+        conv_root = conv_root + '/mauch/'
     train_loader, val_loader = get_train_val_seq_dataloader(train_path, batch_size)
     writer = SummaryWriter('logs/' + 'LSTM')
     criterion = nn.NLLLoss()
@@ -130,6 +136,13 @@ def get_params_by_category(category):
         return root_params, y_size
 
 
+def save_model(model, name):
+    import _pickle as pickle
+    output = open(f'pretrained/{name}.pkl', 'wb')
+    pickle.dump(model, output, -1)
+    output.close()
+
+
 if __name__ == '__main__':
     use_gpu = torch.cuda.is_available()
     parser = createParser()
@@ -142,6 +155,8 @@ if __name__ == '__main__':
                                    args.subsong_len, args.song_len)
     model = LSTMClassifier(input_size=84, hidden_dim=args.hidden_dim, output_size=y_size, num_layers=args.num_layers,
                            use_gpu=use_gpu)
-    train_LSTM(model, train_path=conv_list, num_epochs=args.num_epochs,
-               weight_decay=args.weight_decay, lr=args.learning_rate, batch_size=args.batch_size,
-               test_every=args.test_every)
+    model = train_LSTM(model, train_path=conv_list, num_epochs=args.num_epochs,
+                       weight_decay=args.weight_decay, lr=args.learning_rate, batch_size=args.batch_size,
+                       test_every=args.test_every)
+    if args.save_model_as:
+        save_model(model, args.save_model_as)
