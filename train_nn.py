@@ -115,11 +115,6 @@ def createParser():
 def train_LSTM(model, train_path, num_epochs, weight_decay, lr, batch_size=4, test_every=10):
     if use_gpu:
         model = model.cuda()
-    conv_root = args.conv_root
-    if args.use_librosa:
-        conv_root= conv_root + '/librosa/'
-    else:
-        conv_root = conv_root + '/mauch/'
     train_loader, val_loader = get_train_val_seq_dataloader(train_path, batch_size)
     writer = SummaryWriter('logs/' + 'LSTM')
     criterion = nn.NLLLoss()
@@ -150,9 +145,14 @@ if __name__ == '__main__':
     args = parser.parse_args(sys.argv[1:])
     # prepare train dataset
     params, y_size = get_params_by_category(args.category)
+    conv_root = args.conv_root
+    if args.use_librosa:
+        conv_root = conv_root + '/librosa/'
+    else:
+        conv_root = conv_root + '/mauch/'
     conv_list = args.conv_list
     if not conv_list:
-        conv_list = gen_train_data(args.songs_list, args.audio_root, args.gt_root, params, args.conv_root,
+        conv_list = gen_train_data(args.songs_list, args.audio_root, args.gt_root, params, conv_root,
                                    args.subsong_len, args.song_len)
     model = LSTMClassifier(input_size=84, hidden_dim=args.hidden_dim, output_size=y_size, num_layers=args.num_layers,
                            use_gpu=use_gpu)

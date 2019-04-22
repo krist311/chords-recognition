@@ -22,7 +22,7 @@ def get_params_by_category(category):
 
 def create_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--songs_list', default='data/tracklists/TheBeatles180List', type=str, required=True)
+    parser.add_argument('--songs_list', type=str, required=True)
     parser.add_argument('--audio_root', default='data/audio/', type=str)
     parser.add_argument('--gt_root', default='data/gt/', type=str)
     parser.add_argument('--conv_root', default='data/converted/', type=str)
@@ -39,9 +39,9 @@ if __name__ == '__main__':
     params = get_params_by_category(args.category)
     conv_root = args.conv_root
     if args.use_librosa:
-        conv_root= conv_root + '/librosa/'
+        conv_root = conv_root + '/librosa/'
     else:
         conv_root = conv_root + '/mauch/'
-    conv_list = gen_train_data(args.songs_list, args.audio_root, args.gt_root, params, args.conv_root,
+    conv_list = gen_train_data(args.songs_list, args.audio_root, args.gt_root, params, conv_root,
                                args.subsong_len, args.song_len, use_librosa=args.use_librosa)
     print(conv_list)
