@@ -37,7 +37,7 @@ python preprocess.py --songs_list data/tracklists/TheBeatles180List
   <br>Accuracy on test-set: to be determined
 ### How to use:
 ```
-python train_nn.py --model LSTM --conv_list TheBeatles180List_converted.txt
+python train_nn.py --model LSTM --conv_list TheBeatles180List_converted_librosa.txt
 ```
 #### Optional parameters:
 --num_epochs, default: 2<br>
@@ -78,7 +78,7 @@ python train_rf.py
 --n_estimators, default: 1<br>
 #### Test
 ```
-python test_rf.py --model pretrained/RF_MirexRoot_TheBeatles180_librosa.pkl --conv_root data/converted/librosa --conv_list TheBeatles180List_converted.txt
+python test_rf.py --model pretrained/RF_MirexRoot_TheBeatles180_librosa.pkl --conv_root data/converted/librosa --conv_list TheBeatles180List_converted_librosa.txt
 ```
 ##### Optional parameters:
 --songs_list, default: data/tracklists/TheBeatles180List<br>
