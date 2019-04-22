@@ -14,7 +14,8 @@ gdrive_download 1hiTi_CPKxu9Qpli-zch1vINa4iY5iE9s ./converted/librosa/TheBeatles
 #download converted by using Mauch's algorithm
 gdrive_download 1WzdcHeLeFHrYu_2_NDTEEglfrKLLKc1c ./converted/mauch/TheBeatles.zip
 #download converted list
-gdrive_download 1E-TVqZvlFIJ2KzxmkkdhPxlKXxzQAcZJ TheBeatles180List_converted.txt
+gdrive_download 11fJyHqZGN0baKEjYlaFdVqsnUTIkCJb3 TheBeatles180List_converted_librosa.txt
+gdrive_download 1ny7Vyir9sEVIMqnFa-3gkPVd7f46wUY1 TheBeatles180List_converted_mauch.txt
 #unzip
 unzip -q audio/TheBeatles.zip -d audio
 unzip -q converted/librosa/TheBeatles.zip -d converted/librosa
