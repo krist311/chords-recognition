@@ -69,7 +69,10 @@ def gen_train_data(songs_list, audio_root, gt_root, params, converted_root=None,
             y.append(y_song)
         # save list of converted songs
     if converted_list:
-        converted_list_name = f"{songs_list.split('/')[-1].split('.')[0]}_converted.txt"
+        conv_alg_name = 'librosa'
+        if not use_librosa:
+            conv_alg_name = 'mauch'
+        converted_list_name = f"{songs_list.split('/')[-1].split('.')[0]}_converted_{conv_alg_name}.txt"
         np.savetxt(converted_list_name, converted_list, fmt='%s')
         return converted_list_name
     else:
