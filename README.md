@@ -5,6 +5,7 @@
   - [audio](https://drive.google.com/open?id=1WzdcHeLeFHrYu_2_NDTEEglfrKLLKc1c) - extract in <i>data/audio</i>
   - [gt](https://drive.google.com/open?id=1EK59lTqt6iXN7ykdZXJyrYLuHmws36lh) - extract in <i>data</i>
   - [converted](https://drive.google.com/open?id=1Yh4dBJqtYkN7Hy5qp8E-dKeITX9D38I_) - extract in <i>data/converted</i>
+  - [converted with librosa](https://drive.google.com/open?id=1hiTi_CPKxu9Qpli-zch1vINa4iY5iE9s)
   - [converted_list](https://drive.google.com/open?id=1E-TVqZvlFIJ2KzxmkkdhPxlKXxzQAcZJ) - extract to root folder
 # Structure of repo:
 - <b>data</b>
@@ -43,6 +44,8 @@ train_nn.py --model LSTM
 --song_len, default: 180 if <i>subsong_len</i> is not specified, song will be cutted or zeropaded to <i>song_len</i><br> 
 --hidden_dim, default: 200<br>
 --num_layers, default: 2<br>
+--batch_size, default: 4<br>
+--test_every, default:10, test model on train and val datasets every n iterations
 ## Random forest
   <br>Accuracy on test-set: Mirex_Root:55% (learned 30% of TheBeatles180 dataset)<br>
 ### How to use:
