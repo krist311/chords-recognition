@@ -148,13 +148,15 @@ if __name__ == '__main__':
     conv_root = args.conv_root
     if args.use_librosa:
         conv_root = conv_root + '/librosa/'
+        input_size = 84
     else:
         conv_root = conv_root + '/mauch/'
+        input_size = 252
     conv_list = args.conv_list
     if not conv_list:
         conv_list = gen_train_data(args.songs_list, args.audio_root, args.gt_root, params, conv_root,
                                    args.subsong_len, args.song_len)
-    model = LSTMClassifier(input_size=84, hidden_dim=args.hidden_dim, output_size=y_size, num_layers=args.num_layers,
+    model = LSTMClassifier(input_size=input_size, hidden_dim=args.hidden_dim, output_size=y_size, num_layers=args.num_layers,
                            use_gpu=use_gpu)
     model = train_LSTM(model, train_path=conv_list, num_epochs=args.num_epochs,
                        weight_decay=args.weight_decay, lr=args.learning_rate, batch_size=args.batch_size,
