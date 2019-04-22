@@ -91,7 +91,7 @@ def t(model, songs_list, audio_root, params, save_path):
 
 def createParser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-m', '--model', )
+    parser.add_argument('-m', '--model', required=True)
     parser.add_argument('--num_epochs', default=2, type=int)
     parser.add_argument('--learning_rate', default=0.01, type=float)
     parser.add_argument('--weight_decay', default=1e-5, type=float)
@@ -103,9 +103,9 @@ def createParser():
     parser.add_argument('--category', default='MirexRoot', type=str)
     parser.add_argument('--subsong_len', default=40, type=int)
     parser.add_argument('--song_len', default=180, type=int)
-    parser.add_argument('--hidden_dim', default=200, type=int)
+    parser.add_argument('--hidden_dim', default=50, type=int)
     parser.add_argument('--num_layers', default=2, type=int)
-    parser.add_argument('--batch_size', default=4, type=int)
+    parser.add_argument('--batch_size', default=40, type=int)
     parser.add_argument('--test_every', default=10, type=int)
     parser.add_argument('--use_librosa', default=True, type=bool)
     parser.add_argument('--save_model_as', type=str)

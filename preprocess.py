@@ -22,7 +22,7 @@ def get_params_by_category(category):
 
 def create_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--songs_list', default='data/tracklists/TheBeatles180List', type=str)
+    parser.add_argument('--songs_list', default='data/tracklists/TheBeatles180List', type=str, required=True)
     parser.add_argument('--audio_root', default='data/audio/', type=str)
     parser.add_argument('--gt_root', default='data/gt/', type=str)
     parser.add_argument('--conv_root', default='data/converted/', type=str)

@@ -26,12 +26,12 @@ def get_params_by_category(category):
 
 def create_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', type=str)
+    parser.add_argument('--model', type=str, required=True)
     parser.add_argument('--songs_list', default='data/tracklists/TheBeatles180List', type=str)
     parser.add_argument('--audio_root', default='data/audio/', type=str)
     parser.add_argument('--gt_root', default='data/gt/', type=str)
     parser.add_argument('--conv_root', type=str)
-    parser.add_argument('--conv_list', default='TheBeatles180List_converted.txt', type=str)
+    parser.add_argument('--conv_list', default='TheBeatles180List_converted.txt', type=str, required=True)
     parser.add_argument('--category', default='MirexRoot', type=str)
     parser.add_argument('--subsong_len', default=40, type=int)
     parser.add_argument('--song_len', default=180, type=int)
