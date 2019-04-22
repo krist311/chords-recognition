@@ -38,7 +38,7 @@ python preprocess.py
   <br>Accuracy on test-set: to be determined
 ### How to use:
 ```
-python train_nn.py --model LSTM
+python train_nn.py --model LSTM --conv_list TheBeatles180List_converted.txt
 ```
 #### Optional parameters:
 --num_epochs, default: 2<br>
