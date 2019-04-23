@@ -11,7 +11,7 @@ mkdir -p audio
 gdrive_download 1WzdcHeLeFHrYu_2_NDTEEglfrKLLKc1c ./audio/TheBeatles.zip
 #download converted by librosa audio
 gdrive_download 1hiTi_CPKxu9Qpli-zch1vINa4iY5iE9s ./converted/librosa/TheBeatles.zip
-#download converted by using Mauch's algorithm
+#download converted by Mauch's algorithm
 gdrive_download 1WzdcHeLeFHrYu_2_NDTEEglfrKLLKc1c ./converted/mauch/TheBeatles.zip
 #download converted list
 gdrive_download 11fJyHqZGN0baKEjYlaFdVqsnUTIkCJb3 TheBeatles180List_converted_librosa.txt

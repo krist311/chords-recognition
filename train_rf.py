@@ -95,6 +95,6 @@ if __name__ == '__main__':
     conv_list = args.conv_list
     if not conv_list:
         conv_list = gen_train_data(args.songs_list, args.audio_root, args.gt_root, params, conv_root,
-                                   args.subsong_len, args.song_len)
+                                   args.subsong_len, args.song_len, use_librosa=args.use_librosa)
     model = RandomForest(criterion=args.criterion, max_features=args.max_features, n_estimators=args.n_estimators)
     model = train_rf(model, conv_list)

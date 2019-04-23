@@ -17,10 +17,10 @@ use_gpu = torch.cuda.is_available()
 
 
 def train_model(model, loss_criterion, train_loader, optimizer, scheduler, num_epochs, tensorboard_writer=None,
-                silent=False, val_loader=None, test_every=10):
+                silent=False, val_loader=None, test_every=10, num_classes=13):
+    iteration = 0
     for epoch in range(num_epochs):
         running_loss = 0.0
-        iteration = 0
         for iter_in_epoch, data in enumerate(train_loader, 0):
             inputs, labels = data
             if use_gpu:
@@ -36,8 +36,8 @@ def train_model(model, loss_criterion, train_loader, optimizer, scheduler, num_e
             running_loss += loss.item()
             if iteration % test_every == test_every - 1:
                 # print statistics
-                train_acc = val_model(model, train_loader)
-                val_acc = val_model(model, val_loader)
+                train_acc = val_model(model, train_loader, num_classes)
+                val_acc = val_model(model, val_loader, num_classes)
                 av_loss = running_loss / test_every
                 if tensorboard_writer:
                     write_results(tensorboard_writer, av_loss, iteration, model, train_acc, val_acc)
@@ -47,7 +47,7 @@ def train_model(model, loss_criterion, train_loader, optimizer, scheduler, num_e
             iteration += 1
             scheduler.step()
     print('Finished Training')
-    val_model(model, val_loader, print_results=True)
+    val_model(model, val_loader,num_classes, print_results=True)
 
 
 def print_results(iter, epoch, loss, train_acc, val_acc):
@@ -64,8 +64,39 @@ def write_results(tensorboard_writer, loss, iter, model, train_acc, test_acc):
                                          iter)
 
 
-def val_model(model, test_loader, print_results=False):
+def val_model(model, test_loader, num_classes, print_results=False):
+    def count_scores(pred, corr, scores):
+        pred = pred.view(-1)
+        corr = corr.view(-1)
+        for p, c in zip(pred, corr):
+            scores[p][c] += 1
+
+    def draw_results():
+        import matplotlib.pyplot as plt
+        import matplotlib.ticker as ticker
+        # Normalize by dividing every row by its sum
+        for i in range(num_classes):
+            scores[i] = scores[i] / scores[i].sum()
+
+        # Set up plot
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        cax = ax.matshow(scores.numpy())
+        fig.colorbar(cax)
+
+        # Set up axes
+        ax.set_xticklabels([''] + list(range(num_classes)), rotation=90)
+        ax.set_yticklabels([''] + list(range(num_classes)))
+
+        # Force label at every tick
+        ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
+        ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
+
+        # sphinx_gallery_thumbnail_number = 2
+        plt.show()
+
     correct, total, acc = 0, 0, 0
+    scores = torch.zeros(13, 13)
     with torch.no_grad():
         for data in test_loader:
             inputs, labels = data
@@ -73,12 +104,15 @@ def val_model(model, test_loader, print_results=False):
                 inputs, labels = inputs.cuda(), labels.cuda()
             outputs = model(inputs)
             predicted = outputs.topk(1, dim=2)[1].squeeze()
+            count_scores(predicted, labels, scores)
             total += labels.size(0) * labels.size(1)
             correct += (predicted == labels).sum().item()
     if total:
         acc = 100 * correct / total
+        print(scores)
     if print_results:
         print("Val acc: ", acc)
+        draw_results()
     return acc
 
 
@@ -112,7 +146,7 @@ def createParser():
     return parser
 
 
-def train_LSTM(model, train_path, num_epochs, weight_decay, lr, batch_size=4, test_every=10):
+def train_LSTM(model, train_path, num_epochs, weight_decay, lr, num_classes, batch_size=4, test_every=10):
     if use_gpu:
         model = model.cuda()
     train_loader, val_loader = get_train_val_seq_dataloader(train_path, batch_size)
@@ -122,7 +156,7 @@ def train_LSTM(model, train_path, num_epochs, weight_decay, lr, batch_size=4, te
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
     train_model(model, criterion, train_loader, optimizer, scheduler, num_epochs=num_epochs,
                 tensorboard_writer=writer,
-                val_loader=val_loader, test_every=test_every)
+                val_loader=val_loader, test_every=test_every, num_classes=num_classes)
     return model
 
 
@@ -144,7 +178,7 @@ if __name__ == '__main__':
     parser = createParser()
     args = parser.parse_args(sys.argv[1:])
     # prepare train dataset
-    params, y_size = get_params_by_category(args.category)
+    params, num_classes = get_params_by_category(args.category)
     conv_root = args.conv_root
     if args.use_librosa:
         conv_root = conv_root + '/librosa/'
@@ -155,11 +189,12 @@ if __name__ == '__main__':
     conv_list = args.conv_list
     if not conv_list:
         conv_list = gen_train_data(args.songs_list, args.audio_root, args.gt_root, params, conv_root,
-                                   args.subsong_len, args.song_len)
-    model = LSTMClassifier(input_size=input_size, hidden_dim=args.hidden_dim, output_size=y_size, num_layers=args.num_layers,
+                                   args.subsong_len, args.song_len, args.use_librosa)
+    model = LSTMClassifier(input_size=input_size, hidden_dim=args.hidden_dim, output_size=num_classes,
+                           num_layers=args.num_layers,
                            use_gpu=use_gpu)
     model = train_LSTM(model, train_path=conv_list, num_epochs=args.num_epochs,
                        weight_decay=args.weight_decay, lr=args.learning_rate, batch_size=args.batch_size,
-                       test_every=args.test_every)
+                       test_every=args.test_every, num_classes=num_classes)
     if args.save_model_as:
         save_model(model, args.save_model_as)
