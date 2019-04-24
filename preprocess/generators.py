@@ -22,7 +22,8 @@ def gen_test_data(songs_list, audio_root, params, use_librosa):
     return songs
 
 
-def gen_train_data(songs_list, audio_root, gt_root, params, converted_root=None, subsong_len=None, song_len=180, use_librosa=False):
+def gen_train_data(songs_list, audio_root, gt_root, params, converted_root=None, subsong_len=None, song_len=180,
+                   use_librosa=False):
     def split(data, subsong_len):
         # convert len in seconds to indexes
         inds_len = int(subsong_len * (param['fs'] / param['hop_size']))
@@ -30,7 +31,7 @@ def gen_train_data(songs_list, audio_root, gt_root, params, converted_root=None,
         def zero_pad(data, inds_len):
             tail = len(data) % inds_len
             if tail:
-                data = np.pad(data, ((0, inds_len - tail), (0, 0)), 'constant') if tail > inds_len / 2 else data[:-tail]
+                data = np.pad(data, ((0, inds_len - tail), (0, 0)), 'constant')
             return data
 
         data = zero_pad(data, inds_len)
@@ -46,7 +47,7 @@ def gen_train_data(songs_list, audio_root, gt_root, params, converted_root=None,
         y_nums, inds_to_remove = convert_gt(f'{gt_root}/{song_title}.lab', param['hop_size'], param['fs'], len(X_song),
                                             category)
         # remove chords which couldn't be converted to current category
-        np.delete(X_song, np.r_[inds_to_remove])
+        X_song=np.delete(X_song, np.r_[inds_to_remove], axis=0)
         # TODO transpose chords
         y_song = chord_nums_to_inds(y_nums, category)
         if converted_root:
@@ -61,7 +62,7 @@ def gen_train_data(songs_list, audio_root, gt_root, params, converted_root=None,
             else:
                 inds_len = int(song_len * (param['fs'] / param['hop_size']))
                 data = np.pad(data, ((0, song_len - len(data)), (0, 0)), 'constant') if len(data) < inds_len else data[
-                                                                                                             :inds_len]
+                                                                                                                  :inds_len]
                 np.savetxt(converted_path + '.csv', data, delimiter=",", fmt='%s')
                 converted_list.append(converted_path + '.csv')
         else:

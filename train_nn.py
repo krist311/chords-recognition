@@ -4,6 +4,7 @@ import torch
 import torch.optim as optim
 import torch.nn as nn
 from tensorboardX import SummaryWriter
+from tqdm import tqdm
 
 from models import LSTMClassifier
 from dataloader import get_train_val_seq_dataloader
@@ -16,60 +17,60 @@ torch.set_default_dtype(torch.float64)
 use_gpu = torch.cuda.is_available()
 
 
+def train_LSTM(model, train_path, num_epochs, weight_decay, lr, num_classes, batch_size=4, test_every=10):
+    if use_gpu:
+        model = model.cuda()
+    train_loader, val_loader = get_train_val_seq_dataloader(train_path, batch_size)
+    writer = SummaryWriter('logs/' + 'LSTM')
+    criterion = nn.NLLLoss()
+    optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
+    train_model(model, criterion, train_loader, optimizer, scheduler, num_epochs=num_epochs,
+                tensorboard_writer=writer,
+                val_loader=val_loader, test_every=test_every, num_classes=num_classes)
+    return model
+
+
 def train_model(model, loss_criterion, train_loader, optimizer, scheduler, num_epochs, tensorboard_writer=None,
                 silent=False, val_loader=None, test_every=10, num_classes=13):
-    iteration = 0
-    for epoch in range(num_epochs):
-        running_loss = 0.0
-        for iter_in_epoch, data in enumerate(train_loader, 0):
-            inputs, labels = data
-            if use_gpu:
-                inputs, labels = inputs.cuda(), labels.cuda()
-            model.zero_grad()
-            outputs = model(inputs)
-            outputs = outputs.view(-1, outputs.size(2))
-            labels = labels.view(-1)
-            loss = loss_criterion(outputs, labels)
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            running_loss += loss.item()
-            if iteration % test_every == test_every - 1:
-                # print statistics
-                train_acc = val_model(model, train_loader, num_classes)
-                val_acc = val_model(model, val_loader, num_classes)
-                av_loss = running_loss / test_every
-                if tensorboard_writer:
-                    write_results(tensorboard_writer, av_loss, iteration, model, train_acc, val_acc)
-                if not silent:
-                    print_results(iter_in_epoch, epoch, av_loss, train_acc, val_acc)
-                running_loss = 0
-            iteration += 1
-            scheduler.step()
+    with tqdm(total=len(train_loader)*num_epochs) as pbar:
+        for epoch in range(num_epochs):
+            running_loss = 0.0
+            for i, data in enumerate(train_loader, 0):
+                iteration = epoch * len(train_loader) + i
+                inputs, labels = data
+                if use_gpu:
+                    inputs, labels = inputs.cuda(), labels.cuda()
+                outputs = model(inputs)
+                outputs = outputs.view(-1, outputs.size(2))
+                labels = labels.view(-1)
+                loss = loss_criterion(outputs, labels)
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+                running_loss += loss.item()
+                if iteration % test_every == test_every - 1:
+                    # print statistics
+                    train_acc = val_model(model, train_loader, num_classes)
+                    val_acc = val_model(model, val_loader, num_classes)
+                    av_loss = running_loss / test_every
+                    if tensorboard_writer:
+                        write_results(tensorboard_writer, av_loss, iteration, model, train_acc, val_acc)
+                    if not silent:
+                        print_results(i, epoch, av_loss, train_acc, val_acc)
+                    running_loss = 0
+                #scheduler.step()
+                pbar.update()
     print('Finished Training')
-    val_model(model, val_loader,num_classes, print_results=True)
-
-
-def print_results(iter, epoch, loss, train_acc, val_acc):
-    print('[%d, %5d] loss: %f train_acc: %.3f, val_acc: %.3f' %
-          (epoch + 1, iter + 1, loss, train_acc, val_acc))
-
-
-def write_results(tensorboard_writer, loss, iter, model, train_acc, test_acc):
-    tensorboard_writer.add_scalar('data/loss ', loss, iter)
-    tensorboard_writer.add_scalar('data/train_acc ', test_acc, iter)
-    tensorboard_writer.add_scalar('data/test_acc ', test_acc, iter)
-    for name, param in model.named_parameters():
-        tensorboard_writer.add_histogram(name, param.clone().cpu().data.numpy(),
-                                         iter)
+    val_model(model, val_loader, num_classes, print_results=True)
 
 
 def val_model(model, test_loader, num_classes, print_results=False):
     def count_scores(pred, corr, scores):
         pred = pred.view(-1)
         corr = corr.view(-1)
-        for p, c in zip(pred, corr):
-            scores[p][c] += 1
+        for c, p in zip(corr, pred):
+            scores[c][p] += 1
 
     def draw_results():
         import matplotlib.pyplot as plt
@@ -104,16 +105,30 @@ def val_model(model, test_loader, num_classes, print_results=False):
                 inputs, labels = inputs.cuda(), labels.cuda()
             outputs = model(inputs)
             predicted = outputs.topk(1, dim=2)[1].squeeze()
-            count_scores(predicted, labels, scores)
+            if print_results:
+                count_scores(predicted, labels, scores)
             total += labels.size(0) * labels.size(1)
             correct += (predicted == labels).sum().item()
     if total:
         acc = 100 * correct / total
-        print(scores)
     if print_results:
         print("Val acc: ", acc)
         draw_results()
     return acc
+
+
+def print_results(iter, epoch, loss, train_acc, val_acc):
+    print('[%d, %5d] loss: %f train_acc: %.3f, val_acc: %.3f' %
+          (epoch + 1, iter + 1, loss, train_acc, val_acc))
+
+
+def write_results(tensorboard_writer, loss, iter, model, train_acc, test_acc):
+    tensorboard_writer.add_scalar('data/loss ', loss, iter)
+    tensorboard_writer.add_scalar('data/train_acc ', test_acc, iter)
+    tensorboard_writer.add_scalar('data/test_acc ', test_acc, iter)
+    for name, param in model.named_parameters():
+        tensorboard_writer.add_histogram(name, param.clone().cpu().data.numpy(),
+                                         iter)
 
 
 def t(model, songs_list, audio_root, params, save_path):
@@ -121,6 +136,19 @@ def t(model, songs_list, audio_root, params, save_path):
     for song_name, X in gen_test_data(songs_list, audio_root, param):
         y = model.predict(X)
         preds_to_lab(y, param['hop_size'], param['fs'], category, save_path, song_name)
+
+
+def get_params_by_category(category):
+    if category == 'MirexRoot':
+        _, _, _, _, _, y_size = root_params()
+        return root_params, y_size
+
+
+def save_model(model, name):
+    import _pickle as pickle
+    output = open(f'pretrained/{name}.pkl', 'wb')
+    pickle.dump(model, output, -1)
+    output.close()
 
 
 def createParser():
@@ -144,33 +172,6 @@ def createParser():
     parser.add_argument('--use_librosa', default=True, type=bool)
     parser.add_argument('--save_model_as', type=str)
     return parser
-
-
-def train_LSTM(model, train_path, num_epochs, weight_decay, lr, num_classes, batch_size=4, test_every=10):
-    if use_gpu:
-        model = model.cuda()
-    train_loader, val_loader = get_train_val_seq_dataloader(train_path, batch_size)
-    writer = SummaryWriter('logs/' + 'LSTM')
-    criterion = nn.NLLLoss()
-    optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
-    train_model(model, criterion, train_loader, optimizer, scheduler, num_epochs=num_epochs,
-                tensorboard_writer=writer,
-                val_loader=val_loader, test_every=test_every, num_classes=num_classes)
-    return model
-
-
-def get_params_by_category(category):
-    if category == 'MirexRoot':
-        _, _, _, _, _, y_size = root_params()
-        return root_params, y_size
-
-
-def save_model(model, name):
-    import _pickle as pickle
-    output = open(f'pretrained/{name}.pkl', 'wb')
-    pickle.dump(model, output, -1)
-    output.close()
 
 
 if __name__ == '__main__':

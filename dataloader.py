@@ -63,5 +63,6 @@ def get_train_val_seq_dataloader(file_path, batch_size):
     df = pd.read_csv(file_path, header=None, sep=' ')
     train = df.sample(frac=0.8, random_state=200)
     val = df.drop(train.index)
-    return DataLoader(SeqDatasetConverter(train), batch_size=batch_size, shuffle=True), DataLoader(SeqDatasetConverter(val),
-                                                                                          batch_size=batch_size, shuffle=True)
+    return DataLoader(SeqDatasetConverter(train), batch_size=batch_size, shuffle=True, num_workers=4), DataLoader(
+        SeqDatasetConverter(val),
+        batch_size=batch_size, shuffle=True, num_workers=4)
