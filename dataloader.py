@@ -66,3 +66,8 @@ def get_train_val_seq_dataloader(file_path, batch_size):
     return DataLoader(SeqDatasetConverter(train), batch_size=batch_size, shuffle=True, num_workers=4), DataLoader(
         SeqDatasetConverter(val),
         batch_size=batch_size, shuffle=True, num_workers=4)
+
+
+def get_test_seq_dataloader(file_path, batch_size=4):
+    df = pd.read_csv(file_path, header=None, sep=' ')
+    return DataLoader(SeqDatasetConverter(df), batch_size=batch_size, shuffle=True, num_workers=4)
