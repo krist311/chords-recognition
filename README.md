@@ -59,7 +59,7 @@ python train_nn.py --model LSTM --conv_list TheBeatles180List_converted_librosa.
 --save_model_as, if specified, model will be saved in <i>pretrained</i> folder 
 #### Test
 ```
-python test_rf.py --model pretrained/LSTM_MirexRoot_TheBeatles180_librosa.pkl --conv_root data/converted/librosa --conv_list TheBeatles180List_converted_librosa.txt
+python test_nn.py --model pretrained/LSTM_MirexRoot_TheBeatles180_librosa.pkl --conv_root data/converted/librosa --conv_list TheBeatles180List_converted_librosa.txt
 ```
 ## Random forest
   <br>Accuracy on test-set: Mirex_Root:55%<br>
