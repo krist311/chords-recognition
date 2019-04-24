@@ -34,7 +34,7 @@ python preprocess.py --songs_list data/tracklists/TheBeatles180List
 --use_librosa, default: True
 # Models:
 ## LSTM
-  <br>Accuracy on test-set: to be determined
+  <br>Accuracy on test-set: 65%
 ### How to use:
 ```
 python train_nn.py --model LSTM --conv_list TheBeatles180List_converted_librosa.txt
@@ -57,6 +57,10 @@ python train_nn.py --model LSTM --conv_list TheBeatles180List_converted_librosa.
 --test_every, default:10, test model on train and val datasets every n iterations <br>
 --use_librosa, default: True <br>
 --save_model_as, if specified, model will be saved in <i>pretrained</i> folder 
+#### Test
+```
+python test_rf.py --model pretrained/LSTM_MirexRoot_TheBeatles180_librosa.pkl --conv_root data/converted/librosa --conv_list TheBeatles180List_converted_librosa.txt
+```
 ## Random forest
   <br>Accuracy on test-set: Mirex_Root:55%<br>
 ### How to use:
