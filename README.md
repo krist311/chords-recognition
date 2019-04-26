@@ -24,10 +24,11 @@ System computes notegramms (252 bins per sample) as described in Mauch 2010 (p.9
 ```
 python preprocess.py --songs_list data/tracklists/TheBeatles180List
 ```
-#### Optional parameters:
+#### Parameters:
+--songs_list<br>
 --audio_root, default: data/audio/<br>
 --gt_root, default: data/gt/<br>
---conv_root, default: data/converted/, determins folder where converted datasets will be saved<br>
+--conv_root, default: data/converted/, determines folder where converted datasets will be saved<br>
 --category, default: MirexRoot<br>
 --subsong_len, default: 40, length of song part in seconds to be splitted during preprocess<br> 
 --song_len, default: 180 if <i>subsong_len</i> is not specified, song will be cutted or zeropaded to <i>song_len</i><br> 
@@ -37,7 +38,7 @@ python preprocess.py --songs_list data/tracklists/TheBeatles180List
   <br>Accuracy on test-set: to be determined
 ### How to use:
 ```
-python train_nn.py --model LSTM --conv_list TheBeatles180List_converted_librosa.txt
+python train_rnn.py --model LSTM --conv_list TheBeatles180List_converted_librosa.txt
 ```
 #### Optional parameters:
 --num_epochs, default: 2<br>
@@ -54,7 +55,9 @@ python train_nn.py --model LSTM --conv_list TheBeatles180List_converted_librosa.
 --hidden_dim, default: 200<br>
 --num_layers, default: 2<br>
 --batch_size, default: 4<br>
---test_every, default:10, test model on train and val datasets every n iterations <br>
+--sch_step_size, default:100, scheduler step size<br>
+--sch_gamma, default:100, scheduler's gamma<br>
+--, default:10, test model on train and val datasets every n iterations <br>
 --use_librosa, default: True <br>
 --save_model_as, if specified, model will be saved in <i>pretrained</i> folder 
 ## Random forest

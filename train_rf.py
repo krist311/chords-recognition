@@ -1,11 +1,13 @@
-import argparse
-
 from models import RandomForest
 from dataloader import get_train_val_rf_dataloader
 from preprocess.chords import preds_to_lab
 from preprocess.generators import gen_test_data, gen_train_data
-from preprocess.params import root_params, maj_min_params, maj_min_bass_params, seventh_params, seventh_bass_params
 import sys
+import glog as log
+from pprint import pformat
+
+from utils.parser import get_train_rf_parser
+from utils.utils import get_params_by_category
 
 
 def train_rf(model, data_path):
@@ -19,7 +21,7 @@ def train_rf(model, data_path):
             val_acc = val_rf(model, val_loader)
             print_results(i, train_acc, val_acc)
     train_acc = val_rf(model, train_loader)
-    val_acc = val_rf(model, val_loader)
+    val_acc = val_rf(model, val_loader, )
     print_results(99, train_acc, val_acc)
     return model
 
@@ -33,7 +35,7 @@ def val_rf(model, val_loader, print_results=False):
         correct += (predicted == labels.numpy()).sum().item()
     acc = 100 * correct / total
     if print_results:
-        print("Test acc: ", acc)
+        print("Val acc: ", acc)
     return acc
 
 
@@ -49,42 +51,10 @@ def t(model, songs_list, audio_root, params, save_path):
         preds_to_lab(y, param['hop_size'], param['fs'], category, save_path, song_name)
 
 
-def get_params_by_category(category):
-    params, y_size = 0, 0
-    if category == 'MirexRoot':
-        params = root_params
-    elif category == 'MirexMajMin':
-        params = maj_min_params
-    elif category == 'MirexMajMinBass':
-        params = maj_min_bass_params
-    elif category == 'MirexSevenths':
-        params = seventh_params
-    elif category == 'MirexSeventhsBass':
-        params = seventh_bass_params
-    _, _, _, _, _, y_size = params()
-    return params, y_size
-
-
-def createParser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--songs_list', default='data/tracklists/TheBeatles180List', type=str)
-    parser.add_argument('--audio_root', default='data/audio/', type=str)
-    parser.add_argument('--gt_root', default='data/gt/', type=str)
-    parser.add_argument('--conv_root', default='data/converted/', type=str)
-    parser.add_argument('--conv_list', default='', type=str)
-    parser.add_argument('--category', default='MirexRoot', type=str)
-    parser.add_argument('--subsong_len', default=40, type=int)
-    parser.add_argument('--song_len', default=180, type=int)
-    parser.add_argument('--criterion', default='entropy', type=str)
-    parser.add_argument('--max_features', default='log2', type=str)
-    parser.add_argument('--n_estimators', default='1', type=int)
-    parser.add_argument('--use_librosa', default=True, type=bool)
-    return parser
-
-
 if __name__ == '__main__':
-    parser = createParser()
+    parser = get_train_rf_parser()
     args = parser.parse_args(sys.argv[1:])
+    log.info('Arguments:\n' + pformat(args.__dict__))
     # prepare train dataset
     params, y_size = get_params_by_category(args.category)
     conv_root = args.conv_root
