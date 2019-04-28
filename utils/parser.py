@@ -24,7 +24,7 @@ def get_preprocess_parser():
 
 def get_train_parser():
     parser = get_base_parser()
-    parser.add_argument('--songs_list', default='data/tracklists/full_list.txt', type=str)
+    parser.add_argument('--songs_list', default='data/tracklists/FullList386.txt', type=str)
     parser.add_argument('--conv_list', type=str)
     parser.add_argument('--save_model', type=bool, default=False,
                         help='If true, model will be saved in pretrained folder')
