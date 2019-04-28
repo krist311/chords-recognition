@@ -48,7 +48,8 @@ def train(args):
         model = GRUClassifier(input_size=input_size, hidden_dim=args.hidden_dim, output_size=num_classes,
                               num_layers=args.num_layers,
                               use_gpu=use_gpu, bidirectional=args.bidirectional)
-
+    if use_gpu:
+        model = model.cuda()
     train_loader, val_loader = get_train_val_seq_dataloader(conv_list, args.batch_size)
     log_path = './logs/{:%Y_%m_%d_%H_%M}_{}'.format(datetime.datetime.now(), args.model)
     writer = SummaryWriter(log_path)
@@ -59,7 +60,7 @@ def train(args):
     with tqdm(total=len(train_loader) * args.num_epochs) as pbar:
         for epoch in range(args.num_epochs):
             running_loss = 0.0
-            for i, data in enumerate(train_loader, 0):
+            for i, data in enumerate(train_loader, 1):
                 iteration = epoch * len(train_loader) + i
                 inputs, labels = data
                 if use_gpu:
@@ -80,14 +81,17 @@ def train(args):
                     if writer:
                         write_results(writer, av_loss, iteration, model, train_acc, val_acc)
                     print_results(i, epoch, av_loss, train_acc, val_acc)
-                    running_loss = 0
+                    running_loss = 0.0
                 scheduler.step()
                 pbar.update()
     log.info('Finished Training')
-    val_model(model, val_loader, num_classes, print_results=True)
+    acc = val_model(model, val_loader, num_classes, print_results=True)
     # save pretrained model
-    if args.save_model_as:
-        save_model(model, args.save_model_as)
+    if args.save_model:
+        torch.save(model,
+                   f"pretrained/{args.model}_{args.category}_{'librosa' if args.use_librosa else 'mauch'}_acc:"
+                   f"{acc}_lr:{args.lr}_wd:{args.weight_decay}_nl:{args.num_layers}_hd:{args.hidden_dim}_ne:{args.num_epochs}"
+                   f"_sss:{args.sch_step_size}_sg:{args.sch_gamma}")
 
 
 def val_model(model, test_loader, num_classes, print_results=False):
@@ -126,7 +130,7 @@ def val_model(model, test_loader, num_classes, print_results=False):
     with torch.no_grad():
         for data in test_loader:
             inputs, labels = data
-            if use_gpu:
+            if torch.cuda.is_available():
                 inputs, labels = inputs.cuda(), labels.cuda()
             outputs = model(inputs)
             predicted = outputs.topk(1, dim=2)[1].squeeze()
@@ -163,7 +167,6 @@ def t(model, songs_list, audio_root, params, save_path):
 
 
 if __name__ == '__main__':
-    use_gpu = torch.cuda.is_available()
     parser = get_train_rnn_parser()
     args = parser.parse_args(sys.argv[1:])
     log.info('Arguments:\n' + pformat(args.__dict__))

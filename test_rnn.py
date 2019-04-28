@@ -1,5 +1,7 @@
 import sys
 
+import torch
+
 from dataloader import get_test_seq_dataloader
 from preprocess.generators import gen_train_data
 from train_rnn import val_model
@@ -9,7 +11,8 @@ from utils.utils import get_params_by_category, load_model
 if __name__ == '__main__':
     parser = get_test_parser()
     args = parser.parse_args(sys.argv[1:])
-    model = load_model(args.model)
+    model = torch.load(args.model, map_location=lambda storage, loc: storage)
+    model.eval()
     params, y_size = get_params_by_category(args.category)
     conv_list = args.conv_list
     if not conv_list:

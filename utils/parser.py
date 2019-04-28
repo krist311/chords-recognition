@@ -26,7 +26,8 @@ def get_train_parser():
     parser = get_base_parser()
     parser.add_argument('--songs_list', default='data/tracklists/full_list.txt', type=str)
     parser.add_argument('--conv_list', type=str)
-    parser.add_argument('--save_model_as', type=str)
+    parser.add_argument('--save_model', type=bool, default=False,
+                        help='If true, model will be saved in pretrained folder')
     return parser
 
 
@@ -47,7 +48,6 @@ def get_train_rnn_parser():
     parser.add_argument('--hidden_dim', default=50, type=int)
     parser.add_argument('--num_layers', default=2, type=int)
     parser.add_argument('--batch_size', default=40, type=int)
-    parser.add_argument('--val_step', default=10, type=int)
     parser.add_argument('--bidirectional', default=False, type=bool)
     parser.add_argument('--sch_step_size', default=100, type=int)
     parser.add_argument('--sch_gamma', default=0.1, type=float)
