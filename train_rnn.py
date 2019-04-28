@@ -82,8 +82,8 @@ def train(args):
                         write_results(writer, av_loss, iteration, model, train_acc, val_acc)
                     print_results(i, epoch, av_loss, train_acc, val_acc)
                     running_loss = 0.0
-                scheduler.step()
                 pbar.update()
+            scheduler.step()
     log.info('Finished Training')
     acc = val_model(model, val_loader, num_classes, print_results=True)
     # save pretrained model
