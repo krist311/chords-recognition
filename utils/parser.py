@@ -19,6 +19,7 @@ def get_base_parser():
 def get_preprocess_parser():
     parser = get_base_parser()
     parser.add_argument('--songs_list', type=str, required=True)
+    parser.add_argument('-num_bins', type=int, default=84)
     return parser
 
 
@@ -42,6 +43,7 @@ def get_train_rf_parser():
 def get_train_rnn_parser():
     parser = get_train_parser()
     parser.add_argument('--model', type=str, required=True)
+    parser.add_argument('--opt', type=str, default='Adam', help='optimizer:SGD or Adam, default: Adam')
     parser.add_argument('--num_epochs', default=2, type=int)
     parser.add_argument('--lr', default=0.01, type=float)
     parser.add_argument('--weight_decay', default=1e-5, type=float)
@@ -52,6 +54,8 @@ def get_train_rnn_parser():
     parser.add_argument('--sch_step_size', default=100, type=int)
     parser.add_argument('--sch_gamma', default=0.1, type=float)
     parser.add_argument('--val_step', default=10, type=int)
+    parser.add_argument('--momentum', default=0.8, type=float, help='SGD momentum')
+
     return parser
 
 

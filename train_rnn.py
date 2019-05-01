@@ -26,7 +26,7 @@ def train(args):
     conv_root = args.conv_root
     if args.use_librosa:
         conv_root = conv_root + '/librosa/'
-        input_size = 84
+        input_size = 252
     else:
         conv_root = conv_root + '/mauch/'
         input_size = 252
@@ -54,7 +54,10 @@ def train(args):
     log_path = './logs/{:%Y_%m_%d_%H_%M}_{}'.format(datetime.datetime.now(), args.model)
     writer = SummaryWriter(log_path)
     loss_criterion = nn.NLLLoss()
-    optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+    if args.opt == 'Adam':
+        optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+    else:
+        optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args.sch_step_size, gamma=args.sch_gamma)
 
     with tqdm(total=len(train_loader) * args.num_epochs) as pbar:
