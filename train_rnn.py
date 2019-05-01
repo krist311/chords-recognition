@@ -26,7 +26,7 @@ def train(args):
     conv_root = args.conv_root
     if args.use_librosa:
         conv_root = conv_root + '/librosa/'
-        input_size = 252
+        input_size = 84
     else:
         conv_root = conv_root + '/mauch/'
         input_size = 252
@@ -92,9 +92,9 @@ def train(args):
     # save pretrained model
     if args.save_model:
         torch.save(model,
-                   f"pretrained/{args.model}_{args.category}_{'librosa' if args.use_librosa else 'mauch'}_acc:"
+                   f"pretrained/{args.model}_bi_{args.bidirectional}_{args.category}_{'librosa' if args.use_librosa else 'mauch'}_acc:"
                    f"{acc}_lr:{args.lr}_wd:{args.weight_decay}_nl:{args.num_layers}_hd:{args.hidden_dim}_ne:{args.num_epochs}"
-                   f"_sss:{args.sch_step_size}_sg:{args.sch_gamma}")
+                   f"_sss:{args.sch_step_size}_sg:{args.sch_gamma}_opt_{args.opt}")
 
 
 def val_model(model, test_loader, num_classes, print_results=False):
