@@ -6,7 +6,6 @@ from utils.utils import get_params_by_category
 import glog as log
 from pprint import pformat
 
-
 if __name__ == '__main__':
     parser = get_preprocess_parser()
     args = parser.parse_args(sys.argv[1:])
@@ -18,5 +17,6 @@ if __name__ == '__main__':
     else:
         conv_root = conv_root + '/mauch/'
     conv_list = gen_train_data(args.songs_list, args.audio_root, args.gt_root, params, conv_root,
-                               args.subsong_len, args.song_len, use_librosa=args.use_librosa)
+                               args.subsong_len, args.song_len, use_librosa=args.use_librosa,
+                               mod_steps=args.modulation_steps)
     print(conv_list)

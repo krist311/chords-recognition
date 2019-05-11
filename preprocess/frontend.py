@@ -9,11 +9,19 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import normalize
 
 
-def preprocess_audio(audiopath, feparam, use_librosa):
+def preprocess_librosa(audiopath, feparam, n_bins=84, bins_per_octave=12, mod_steps=(0,)):
     x, sr = librosa.load(audiopath, feparam['fs'], mono=feparam['stereo_to_mono'])
-    if use_librosa:
-        X = np.abs(librosa.core.cqt(x, sr=sr, tuning=None, window='hamming'))
-        return X
+    Xs = []
+    tuning = librosa.estimate_tuning(y=x, sr=sr)
+    for mod_step in mod_steps:
+        X_pitched = librosa.effects.pitch_shift(x, sr, n_steps=mod_step)
+        X = np.abs(librosa.core.cqt(X_pitched,sr=sr, n_bins=n_bins, bins_per_octave=bins_per_octave, tuning=tuning, window='hamming', norm=1))
+        X=librosa.decompose.nn_filter(X)
+        Xs.append(X.T)
+    return Xs
+
+def preprocess_mauch(audiopath, feparam, n_bins=84, bins_per_octave=12, mod_steps=(0,)):
+    x, sr = librosa.load(audiopath, feparam['fs'], mono=feparam['stereo_to_mono'])
     # we differentiate tone and note in this program
     # by tone we mean 1 / 3 - semitone - wise frequency, by note we mean semitone - wise frequency
     fmin = 27.5  # MIDI note 21, Piano key number 1(A0)

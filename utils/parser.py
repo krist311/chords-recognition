@@ -19,7 +19,8 @@ def get_base_parser():
 def get_preprocess_parser():
     parser = get_base_parser()
     parser.add_argument('--songs_list', type=str, required=True)
-    parser.add_argument('-num_bins', type=int, default=84)
+    parser.add_argument('--num_bins', type=int, default=84)
+    parser.add_argument('--modulation_steps', nargs='+', default=(0,), type=int)
     return parser
 
 
