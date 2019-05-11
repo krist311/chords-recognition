@@ -55,6 +55,7 @@ def get_train_rnn_parser():
     parser.add_argument('--sch_gamma', default=0.1, type=float)
     parser.add_argument('--val_step', default=10, type=int)
     parser.add_argument('--momentum', default=0.8, type=float, help='SGD momentum')
+    parser.add_argument('--dropout', default=(0.4, 0.0, 0.0), type=float, nargs=3, help='list of dropout values: before rnn, inside rnn, after rnn')
 
     return parser
 

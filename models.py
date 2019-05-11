@@ -8,20 +8,19 @@ torch.set_default_dtype(torch.float64)
 
 
 class LSTMClassifier(nn.Module):
-    def __init__(self, input_size, hidden_dim, output_size, num_layers, use_gpu, bidirectional, dropout=0.0):
+    def __init__(self, input_size, hidden_dim, output_size, num_layers, use_gpu, bidirectional, dropout=(0.4, 0.0, 0.0)):
         super(LSTMClassifier, self).__init__()
         self.use_gpu = use_gpu
         self.input_size = input_size
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
         self.num_directions = 2 if bidirectional else 1
-        self.dropout1 = nn.Dropout(p=dropout)
+        self.dropout1 = nn.Dropout(p=dropout[0])
         self.lstm = nn.LSTM(input_size, hidden_dim, num_layers=self.num_layers, batch_first=True,
-                            bidirectional=bidirectional, dropout=dropout)
+                            bidirectional=bidirectional, dropout=dropout[1])
         self.bn1 = nn.BatchNorm1d(hidden_dim * self.num_directions)
-        self.dropout2 = nn.Dropout(p=dropout)
+        self.dropout2 = nn.Dropout(p=dropout[2])
         self.hidden2out = nn.Linear(hidden_dim * self.num_directions, output_size)
-        self.softmax = nn.LogSoftmax(dim=2)
 
     def disable_dropout(self):
         self.lstm.dropout = .0

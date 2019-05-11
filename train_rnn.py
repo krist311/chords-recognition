@@ -43,7 +43,7 @@ def train(args):
     if args.model == 'LSTM':
         model = LSTMClassifier(input_size=input_size, hidden_dim=args.hidden_dim, output_size=num_classes,
                                num_layers=args.num_layers,
-                               use_gpu=use_gpu, bidirectional=args.bidirectional, dropout=0.4)
+                               use_gpu=use_gpu, bidirectional=args.bidirectional, dropout=args.dropout)
     elif args.model == 'GRU':
         model = GRUClassifier(input_size=input_size, hidden_dim=args.hidden_dim, output_size=num_classes,
                               num_layers=args.num_layers,
