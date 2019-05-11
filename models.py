@@ -1,22 +1,32 @@
 import torch
 import torch.nn as nn
 from sklearn.ensemble import RandomForestClassifier
+from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
+import numpy as np
 
 torch.set_default_dtype(torch.float64)
 
 
 class LSTMClassifier(nn.Module):
-    def __init__(self, input_size, hidden_dim, output_size, num_layers, use_gpu, bidirectional):
+    def __init__(self, input_size, hidden_dim, output_size, num_layers, use_gpu, bidirectional, dropout=0.0):
         super(LSTMClassifier, self).__init__()
         self.use_gpu = use_gpu
         self.input_size = input_size
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
         self.num_directions = 2 if bidirectional else 1
+        self.dropout1 = nn.Dropout(p=dropout)
         self.lstm = nn.LSTM(input_size, hidden_dim, num_layers=self.num_layers, batch_first=True,
-                            bidirectional=bidirectional)
+                            bidirectional=bidirectional, dropout=dropout)
+        self.bn1 = nn.BatchNorm1d(hidden_dim * self.num_directions)
+        self.dropout2 = nn.Dropout(p=dropout)
         self.hidden2out = nn.Linear(hidden_dim * self.num_directions, output_size)
         self.softmax = nn.LogSoftmax(dim=2)
+
+    def disable_dropout(self):
+        self.lstm.dropout = .0
+        self.dropout1.p = .0
+        self.dropout2.p = .0
 
     def init_hidden(self, batch_size):
         if self.use_gpu:
@@ -30,11 +40,20 @@ class LSTMClassifier(nn.Module):
                 torch.zeros(self.num_layers * self.num_directions, batch_size, self.hidden_dim, dtype=torch.float64),
                 torch.zeros(self.num_layers * self.num_directions, batch_size, self.hidden_dim, dtype=torch.float64))
 
-    def forward(self, batch):
+    def forward(self, batch, lengths):
         self.hidden = self.init_hidden(batch.size(0))
-        outputs, self.hidden = self.lstm(batch, self.hidden)
-        output = self.hidden2out(outputs)
-        output = self.softmax(output)
+        batch = self.dropout1(batch)
+        # pack sequence
+        packed_input = pack_padded_sequence(batch, lengths, batch_first=True)
+        # throw them through your LSTM (remember to give batch_first=True here if you packed with it)
+        ####
+        packed_output, self.hidden = self.lstm(packed_input, self.hidden)
+        # unpack your output if required
+        output, _ = pad_packed_sequence(packed_output, batch_first=True)
+
+        output = self.bn1(output.permute(0,2,1)).permute(0,2,1)
+        output = self.dropout2(output)
+        output = self.hidden2out(output)
         return output
 
 
@@ -47,9 +66,12 @@ class GRUClassifier(nn.Module):
         self.num_layers = num_layers
         self.num_directions = 2 if bidirectional else 1
         self.gru = nn.GRU(input_size, hidden_dim, num_layers=self.num_layers, batch_first=True,
-                          bidirectional=bidirectional)
+                          bidirectional=bidirectional, dropout=0.2)
         self.hidden2out = nn.Linear(hidden_dim * self.num_directions, output_size)
         self.softmax = nn.LogSoftmax(dim=2)
+
+    def disable_dropout(self):
+        self.gru.dropout = .0
 
     def init_hidden(self, batch_size):
         if self.use_gpu:
@@ -60,7 +82,7 @@ class GRUClassifier(nn.Module):
             return (
                 torch.zeros(self.num_layers * self.num_directions, batch_size, self.hidden_dim, dtype=torch.float64))
 
-    def forward(self, batch):
+    def forward(self, batch, lengths):
         self.hidden = self.init_hidden(batch.size(0))
         outputs, self.hidden = self.gru(batch, self.hidden)
         output = self.hidden2out(outputs)

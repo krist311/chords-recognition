@@ -49,7 +49,7 @@ def get_train_rnn_parser():
     parser.add_argument('--weight_decay', default=1e-5, type=float)
     parser.add_argument('--hidden_dim', default=50, type=int)
     parser.add_argument('--num_layers', default=2, type=int)
-    parser.add_argument('--batch_size', default=40, type=int)
+    parser.add_argument('--batch_size', default=64, type=int)
     parser.add_argument('--bidirectional', default=False, type=bool)
     parser.add_argument('--sch_step_size', default=100, type=int)
     parser.add_argument('--sch_gamma', default=0.1, type=float)

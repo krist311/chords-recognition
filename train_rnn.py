@@ -43,7 +43,7 @@ def train(args):
     if args.model == 'LSTM':
         model = LSTMClassifier(input_size=input_size, hidden_dim=args.hidden_dim, output_size=num_classes,
                                num_layers=args.num_layers,
-                               use_gpu=use_gpu, bidirectional=args.bidirectional)
+                               use_gpu=use_gpu, bidirectional=args.bidirectional, dropout=0.4)
     elif args.model == 'GRU':
         model = GRUClassifier(input_size=input_size, hidden_dim=args.hidden_dim, output_size=num_classes,
                               num_layers=args.num_layers,
@@ -53,22 +53,22 @@ def train(args):
     train_loader, val_loader = get_train_val_seq_dataloader(conv_list, args.batch_size)
     log_path = './logs/{:%Y_%m_%d_%H_%M}_{}'.format(datetime.datetime.now(), args.model)
     writer = SummaryWriter(log_path)
-    loss_criterion = nn.NLLLoss()
+    loss_criterion = nn.CrossEntropyLoss(ignore_index=-1)
     if args.opt == 'Adam':
         optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     else:
         optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args.sch_step_size, gamma=args.sch_gamma)
-
+    model.train()
     with tqdm(total=len(train_loader) * args.num_epochs) as pbar:
         for epoch in range(args.num_epochs):
             running_loss = 0.0
             for i, data in enumerate(train_loader, 1):
                 iteration = epoch * len(train_loader) + i
-                inputs, labels = data
+                inputs, labels, lengths = data
                 if use_gpu:
                     inputs, labels = inputs.cuda(), labels.cuda()
-                outputs = model(inputs)
+                outputs = model(inputs, lengths)
                 outputs = outputs.view(-1, outputs.size(2))
                 labels = labels.view(-1)
                 loss = loss_criterion(outputs, labels)
@@ -85,8 +85,13 @@ def train(args):
                         write_results(writer, av_loss, iteration, model, train_acc, val_acc)
                     print_results(i, epoch, av_loss, train_acc, val_acc)
                     running_loss = 0.0
+                    model.train()
                 pbar.update()
             scheduler.step()
+            # disable dropout on last 10 epochs
+            if args.num_epochs - epoch == 10:
+                model.disable_dropout()
+
     log.info('Finished Training')
     acc = val_model(model, val_loader, num_classes, print_results=True)
     # save pretrained model
@@ -128,18 +133,22 @@ def val_model(model, test_loader, num_classes, print_results=False):
         # sphinx_gallery_thumbnail_number = 2
         plt.show()
 
+    model.eval()
     correct, total, acc = 0, 0, 0
     scores = torch.zeros(13, 13)
     with torch.no_grad():
         for data in test_loader:
-            inputs, labels = data
+            inputs, labels, lengths = data
             if torch.cuda.is_available():
                 inputs, labels = inputs.cuda(), labels.cuda()
-            outputs = model(inputs)
-            predicted = outputs.topk(1, dim=2)[1].squeeze()
+            outputs = model(inputs, lengths)
+            predicted = outputs.topk(1, dim=2)[1].squeeze().view(-1)
+            labels = labels.view(-1)
+            predicted = predicted[labels >= 0]
+            labels = labels[labels >= 0]
             if print_results:
                 count_scores(predicted, labels, scores)
-            total += labels.size(0) * labels.size(1)
+            total += len(labels)
             correct += (predicted == labels).sum().item()
     if total:
         acc = 100 * correct / total
