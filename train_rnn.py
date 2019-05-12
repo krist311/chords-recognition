@@ -47,7 +47,7 @@ def train(args):
     elif args.model == 'GRU':
         model = GRUClassifier(input_size=input_size, hidden_dim=args.hidden_dim, output_size=num_classes,
                               num_layers=args.num_layers,
-                              use_gpu=use_gpu, bidirectional=args.bidirectional)
+                              use_gpu=use_gpu, bidirectional=args.bidirectional, dropout=args.dropout)
     if use_gpu:
         model = model.cuda()
     train_loader, val_loader = get_train_val_seq_dataloader(conv_list, args.batch_size)
