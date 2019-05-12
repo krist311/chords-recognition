@@ -76,11 +76,13 @@
  “Symbolic representation of musical chords: A proposed syntax for text
  annotations.” In Proceedings of the 6th International Society for Music
  Information Retrieval Conference (ISMIR), 66–71."""
+import os
+
 import numpy as np
 
 
 def convert_gt(gt_path, hop_size, fs, song_len, category):
-    tw = (hop_size / fs)  # time ticks
+    tw = hop_size / fs  # time ticks
     y, inds_to_remove = [], []
     with open(gt_path, 'r') as f:
         for gt_chord_line in f:
@@ -111,19 +113,22 @@ def preds_to_lab(y, hop_size, fs, category, save_path, song_name):
     def ind_to_chord_names(inds, category):
         _, ind_to_name = create_chords_list(category)
         return [ind_to_name[ind] for ind in inds]
-
     results = []
-    start_time = 0
+    start_time = 0.0
     chord_names = ind_to_chord_names(y, category)
     tw = (hop_size / fs)  # time ticks
-    y_prev = ''
-    for i, chord_name in enumerate(chord_names):
-        if chord_name == y_prev:
+    y_prev = chord_names[0]
+    for i, chord_name in enumerate(chord_names,1):
+        if chord_name == y_prev and i!=len(chord_names):
             continue
         end_time = i * tw
-        results.append(f"{start_time}	{end_time}	{chord_name}")
+        results.append(f"{start_time}	{end_time}	{y_prev}")
         start_time = end_time
-    np.savetxt(save_path + '/' + song_name + '_pred.lab', results, delimiter=",", fmt='%s')
+        y_prev = chord_name
+    predicted_path = f"{save_path}/{song_name}_pred.lab"
+    # create folder for saving predictions
+    os.makedirs(predicted_path[:-len(predicted_path.split('/')[-1])], exist_ok=True)
+    np.savetxt(predicted_path, results, delimiter=",", fmt='%s')
 
 
 def chord_nums_to_inds(chord_nums, category):
@@ -280,40 +285,40 @@ def comps_to_type(comps, category):
 def get_components_by_notation(type_name):
     return {
         # ************************* major and minor ************************
-        'maj': ('1','3', '5'),
-        'min': ('1','b3', '5'),
+        'maj': ('1', '3', '5'),
+        'min': ('1', 'b3', '5'),
         # ************************ sevenths *****************************
-        '7': ('1','3', '5', 'b7'),
-        'maj7': ('1','3', '5', '7'),
-        'min7': ('1','b3', '5', 'b7'),
+        '7': ('1', '3', '5', 'b7'),
+        'maj7': ('1', '3', '5', '7'),
+        'min7': ('1', 'b3', '5', 'b7'),
         # ************************ suspend and add ***************************
-        'sus2': ('1','2', '5'),
-        'sus4': ('1','4', '5'),
-        'add9': ('1','2', '3', '5'),
-        'add11': ('1','3', '4', '5'),
-        'madd9': ('1','2', 'b3', '5'),
-        'madd11': ('1','b3', '4', '5'),
-        'maj7sus2': ('1','2', '5', '7'),
-        '7sus2': ('1','2', '5', 'b7'),
-        'maj7sus4': ('1','4', '5', '7'),
-        '7sus4': ('1','4', '5', 'b7'),
-        'maj9sus4': ('1','4', '5', '7', '9'),
-        '9sus4': ('1','4', '5', 'b7', '9'),
+        'sus2': ('1', '2', '5'),
+        'sus4': ('1', '4', '5'),
+        'add9': ('1', '2', '3', '5'),
+        'add11': ('1', '3', '4', '5'),
+        'madd9': ('1', '2', 'b3', '5'),
+        'madd11': ('1', 'b3', '4', '5'),
+        'maj7sus2': ('1', '2', '5', '7'),
+        '7sus2': ('1', '2', '5', 'b7'),
+        'maj7sus4': ('1', '4', '5', '7'),
+        '7sus4': ('1', '4', '5', 'b7'),
+        'maj9sus4': ('1', '4', '5', '7', '9'),
+        '9sus4': ('1', '4', '5', 'b7', '9'),
         # ************************ sixth ******************************* #
-        'maj6': ('1','3', '5', '6'),
-        'min6': ('1','b3', '5', '6'),
+        'maj6': ('1', '3', '5', '6'),
+        'min6': ('1', 'b3', '5', '6'),
         # ************************ Extended ******************************#
-        'maj9': ('1','3', '5', '7', '9'),
-        '9': ('1','3', '5', 'b7', '9'),
-        'maj11': ('1','3', '5', '7', '9', '11'),
-        'min11': ('1','b3', '5', 'b7', '9', '11'),
-        '11': ('1','3', '5', 'b7', '9', '11'),
+        'maj9': ('1', '3', '5', '7', '9'),
+        '9': ('1', '3', '5', 'b7', '9'),
+        'maj11': ('1', '3', '5', '7', '9', '11'),
+        'min11': ('1', 'b3', '5', 'b7', '9', '11'),
+        '11': ('1', '3', '5', 'b7', '9', '11'),
         # ******************** augmented and diminished ******************** #
-        'aug': ('1','3', '5#'),
-        'dim': ('1','b3', 'b5'),
-        'dim7': ('1','b3', 'b5', 'bb7'),
-        'hdim': ('1','b3', 'b5', 'b7'),
-        'minmaj7': ('1','b3', '5', '7')
+        'aug': ('1', '3', '5#'),
+        'dim': ('1', 'b3', 'b5'),
+        'dim7': ('1', 'b3', 'b5', 'bb7'),
+        'hdim': ('1', 'b3', 'b5', 'b7'),
+        'minmaj7': ('1', 'b3', '5', '7')
     }.get(type_name)
 
 

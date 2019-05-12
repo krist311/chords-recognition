@@ -64,5 +64,8 @@ def get_train_rnn_parser():
 def get_test_parser():
     parser = get_base_parser()
     parser.add_argument('--model', type=str, required=True)
-    parser.add_argument('--conv_list', type=str, required=True)
+    parser.add_argument('--conv_list', type=str)
+    parser.add_argument('--save_as_lab', type=bool, default=False)
+    parser.add_argument('--lab_path', type=str, default='data/predicted')
+    parser.add_argument('--test_list', type=str)
     return parser

@@ -39,16 +39,17 @@ class LSTMClassifier(nn.Module):
                 torch.zeros(self.num_layers * self.num_directions, batch_size, self.hidden_dim, dtype=torch.float64),
                 torch.zeros(self.num_layers * self.num_directions, batch_size, self.hidden_dim, dtype=torch.float64))
 
-    def forward(self, batch, lengths):
+    def forward(self, batch, lengths=None):
         self.hidden = self.init_hidden(batch.size(0))
         batch = self.dropout1(batch)
-        # pack sequence
-        packed_input = pack_padded_sequence(batch, lengths, batch_first=True)
-        # throw them through your LSTM (remember to give batch_first=True here if you packed with it)
+        # pack sequence if lengths available(during training)
+        if lengths:
+            batch = pack_padded_sequence(batch, lengths, batch_first=True)
         ####
-        packed_output, self.hidden = self.lstm(packed_input, self.hidden)
+        output, self.hidden = self.lstm(batch, self.hidden)
         # unpack your output if required
-        output, _ = pad_packed_sequence(packed_output, batch_first=True)
+        if lengths:
+            output, _ = pad_packed_sequence(output, batch_first=True)
 
         output = self.bn1(output.permute(0,2,1)).permute(0,2,1)
         output = self.dropout2(output)

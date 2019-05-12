@@ -15,16 +15,13 @@ def iter_songs_list(songs_list):
             yield song_title, song_folder
 
 
-def gen_test_data(songs_list, audio_root, params, use_librosa):
-    # songs = []
-    # for song_name, audio_path in iter_songs_list(songs_list):
-    #     songs.append((song_name, preprocess_audio(audio_path, params, use_librosa)))
-    # return songs
-    pass
+def gen_test_data(songs_list, audio_root, params):
+    for song_name, audio_path in iter_songs_list(songs_list):
+        yield (song_name, preprocess_librosa(f'{audio_root}/{audio_path}', params, mod_steps=(0,)))
 
 
-def gen_train_data1(songs_list, audio_root, gt_root, params, converted_root=None, subsong_len=None, song_len=180,
-                    use_librosa=False):
+def gen_train_data_old(songs_list, audio_root, gt_root, params, converted_root=None, subsong_len=None, song_len=180,
+                       use_librosa=False):
     def split(data, subsong_len):
         # convert len in seconds to indexes
         inds_len = int(subsong_len * (param['fs'] / param['hop_size']))

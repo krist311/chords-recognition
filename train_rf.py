@@ -45,7 +45,7 @@ def print_results(iter, train_acc, val_acc):
 
 
 def t(model, songs_list, audio_root, params, save_path):
-    param, _, _, _, category = params()
+    param, _, _, _, category, _ = params()
     for song_name, X in gen_test_data(songs_list, audio_root, param):
         y = model.predict(X)
         preds_to_lab(y, param['hop_size'], param['fs'], category, save_path, song_name)

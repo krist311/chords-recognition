@@ -97,9 +97,9 @@ def train(args):
     # save pretrained model
     if args.save_model:
         torch.save(model,
-                   f"pretrained/{args.model}_bi_{args.bidirectional}_{args.category}_{'librosa' if args.use_librosa else 'mauch'}_acc:"
-                   f"{acc}_lr:{args.lr}_wd:{args.weight_decay}_nl:{args.num_layers}_hd:{args.hidden_dim}_ne:{args.num_epochs}"
-                   f"_sss:{args.sch_step_size}_sg:{args.sch_gamma}_opt_{args.opt}")
+                   f"pretrained/{args.model}_bi_{args.bidirectional}_{args.category}_{'librosa' if args.use_librosa else 'mauch'}_acc_"
+                   f"{acc}_lr_{args.lr}_wd_{args.weight_decay}_nl_{args.num_layers}_hd_{args.hidden_dim}_ne_{args.num_epochs}"
+                   f"_sss_{args.sch_step_size}_sg_{args.sch_gamma}_opt_{args.opt}")
 
 
 def val_model(model, test_loader, num_classes, print_results=False):
@@ -169,13 +169,6 @@ def write_results(tensorboard_writer, loss, i, model, train_acc, test_acc):
     tensorboard_writer.add_scalar('data/val_acc', test_acc, i)
     for name, param in model.named_parameters():
         tensorboard_writer.add_histogram(name, param.clone().cpu().data.numpy(), i)
-
-
-def t(model, songs_list, audio_root, params, save_path):
-    param, _, _, _, category = params()
-    for song_name, X in gen_test_data(songs_list, audio_root, param):
-        y = model.predict(X)
-        preds_to_lab(y, param['hop_size'], param['fs'], category, save_path, song_name)
 
 
 if __name__ == '__main__':
