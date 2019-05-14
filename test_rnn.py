@@ -14,7 +14,7 @@ def t(model, songs_list, audio_root, params, save_path):
     param, _, _, _, category, _ = params()
     for song_name, X in gen_test_data(songs_list, audio_root, param):
         with torch.no_grad():
-            pred = model(torch.tensor(X))
+            pred = model(torch.tensor(X).cuda())
             y = pred.topk(1, dim=2)[1].squeeze().view(-1)
             preds_to_lab(y, param['hop_size'], param['fs'], category, save_path, song_name)
 
@@ -22,9 +22,9 @@ def t(model, songs_list, audio_root, params, save_path):
 if __name__ == '__main__':
     parser = get_test_parser()
     args = parser.parse_args(sys.argv[1:])
-    model = torch.load(args.model, map_location=lambda storage, loc: storage)
+    model = torch.load(args.model)
     model.eval()
-    params, y_size = get_params_by_category(args.category)
+    params, y_size, y_ind = get_params_by_category(args.category)
     conv_list = args.conv_list
     if args.save_as_lab:
         t(model, args.test_list, args.audio_root, params, args.lab_path)

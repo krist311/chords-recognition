@@ -10,7 +10,7 @@ if __name__ == '__main__':
     parser = get_preprocess_parser()
     args = parser.parse_args(sys.argv[1:])
     log.info('Arguments:\n' + pformat(args.__dict__))
-    params, _ = get_params_by_category(args.category)
+    params, _, _ = get_params_by_category(args.category)
     conv_root = args.conv_root
     if args.use_librosa:
         conv_root = conv_root + '/librosa/'

@@ -3,7 +3,7 @@
 import os
 import numpy as np
 
-from preprocess.chords import convert_gt, chord_nums_to_inds
+from preprocess.chords import convert_gt, chord_nums_to_inds, chords_nums_to_inds
 from preprocess.frontend import preprocess_mauch, preprocess_librosa
 
 
@@ -78,22 +78,31 @@ def gen_train_data(songs_list, audio_root, gt_root, params, converted_root=None,
     def mod_y(y, mod_step):
         y_mod = []
         mod_step = mod_step % 12
-        for chord in y:
-            if chord != 0 and chord != -1:
-                root, type = chord.split(':')
-                root = int(root)
-                if root + mod_step < 1:
-                    root = 12 - (root + mod_step)
-                elif root + mod_step > 12:
-                    root = root + mod_step - 12
+        for chords in y:
+            mod_row=[]
+            for chord in chords:
+                if type(chord) == str:
+                    if ':' in chord:
+                        root, chord_type = chord.split(':')
+                    else:
+                        root, chord_type = chord, ''
+                    root = int(root)
+                    if root + mod_step < 1:
+                        root = 12 - (root + mod_step)
+                    elif root + mod_step > 12:
+                        root = root + mod_step - 12
+                    else:
+                        root = root + mod_step
+                    if chord_type:
+                        mod_row.append(f'{root}:{chord_type}')
+                    else:
+                        mod_row.append(root)
                 else:
-                    root = root + mod_step
-                y_mod.append(f'{root}:{type}')
-            else:
-                y_mod.append(chord)
+                    mod_row.append(chord)
+            y_mod.append(mod_row)
         return y_mod
 
-    param, _, _, _, category, _ = params()
+    param, _, _, _, category, _, _ = params()
     converted_list = []
     for song_title, audio_path in iter_songs_list(songs_list):
         # create folder for converted audio
@@ -103,16 +112,14 @@ def gen_train_data(songs_list, audio_root, gt_root, params, converted_root=None,
         print('collecting training data of ', song_title)
         Xs = preprocess_librosa(f'{audio_root}/{audio_path}', param, mod_steps=mod_steps)
         # ** ** ** map audio content to gt ** ** **
-        y_nums, inds_to_remove = convert_gt(f'{gt_root}/{song_title}.lab', param['hop_size'], param['fs'],
-                                            len(Xs[0]),
-                                            category)
+        y_nums = convert_gt(f'{gt_root}/{song_title}.lab', param['hop_size'], param['fs'],
+                            len(Xs[0]),
+                            category)
         # TODO transpose chords
-        for i, mod_step in enumerate(mod_steps, 0):
-            # remove chords which couldn't be converted to current category
-            X = np.delete(Xs[i], np.r_[inds_to_remove], axis=0)
+        for i, mod_step in enumerate(mod_steps):
             y_nums_song = mod_y(y_nums, mod_step)
-            y_song = chord_nums_to_inds(y_nums_song, category)
-            data = np.append(X, np.array([y_song]).T, axis=1)
+            y_song = chords_nums_to_inds(y_nums_song)
+            data = np.append(Xs[i], y_song, axis=1)
 
             if subsong_len:
                 for i, data_part in enumerate(split(data, subsong_len)):

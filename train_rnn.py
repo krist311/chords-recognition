@@ -7,6 +7,7 @@ from tensorboardX import SummaryWriter
 from tqdm import tqdm
 import glog as log
 from pprint import pformat
+from preprocess.chords import TypesConverter, chord_nums_to_inds
 
 from models import LSTMClassifier, GRUClassifier
 from dataloader import get_train_val_seq_dataloader
@@ -20,9 +21,77 @@ from utils.utils import get_params_by_category, save_model
 torch.set_default_dtype(torch.float64)
 
 
-def train(args):
+def val_maj_min(root_model, maj_min_model, val_loader):
+    root_model.eval()
+    maj_min_model.eval()
+    correct, total, acc = 0, 0, 0
+    with torch.no_grad():
+        for data in val_loader:
+            inputs, labels, lengths = data
+            if torch.cuda.is_available():
+                inputs, labels = inputs.cuda(), labels.cuda()
+            root_outputs = root_model(inputs, lengths)
+            root_predicted = root_outputs.topk(1, dim=2)[1].squeeze().view(-1)
+            maj_min_outputs = maj_min_model(inputs, lengths)
+            maj_min_predicted = maj_min_outputs.topk(1, dim=2)[1].squeeze().view(-1)
+
+            # make final prediction
+            chord_nums = []
+            for root, chord_type in zip(root_predicted, maj_min_predicted):
+                if not root or not chord_type:
+                    chord_nums.append('0')
+                else:
+                    chord_nums.append(f"{root}:{TypesConverter.ind_to_type(chord_type.item())}")
+            predicted = chord_nums_to_inds(chord_nums, 'MirexMajMin')
+
+            labels = labels.view(-1)
+            predicted = torch.tensor(predicted)[labels >= 0]
+            labels = labels[labels >= 0]
+
+            total += len(labels)
+            correct += (predicted == labels).sum().item()
+    if total:
+        acc = 100 * correct / total
+        print(f'Total acc: {acc}')
+
+
+def train_nets(args):
+    if args.category == 'MirexRoot':
+        train(args)
+    elif args.category == 'MirexMajMin':
+        if args.multiple_nets:
+            root_model = train(args, 'MirexRoot')
+            maj_min_model = train(args, 'maj_min')
+            params, num_classes, y_ind = get_params_by_category(args.category)
+            _, val_loader = get_train_val_seq_dataloader(args.conv_list, args.batch_size, y_ind)
+            val_maj_min(root_model,maj_min_model, val_loader)
+        else:
+            train(args)
+    elif args.category == 'MirexMajMinBass':
+        if args.multiple_nets:
+            root_model = train(args, 'MirexRoot')
+            maj_min_model = train(args, 'maj_min')
+            bass_model = train(args, 'bass')
+        else:
+            train(args)
+    elif args.category == 'MirexSevenths':
+        if args.multiple_nets:
+            root_model = train(args, 'MirexRoot')
+            maj_min_7_model = train(args, 'maj_min_7')
+        else:
+            train(args)
+    elif args.category == 'MirexSeventhsBass':
+        if args.multiple_nets:
+            root_model = train(args, 'MirexRoot')
+            maj_min_7_model = train(args, 'maj_min_7')
+            bass_model = train(args, 'bass7')
+        else:
+            train(args)
+
+
+def train(args, category=None):
     # prepare train dataset
-    params, num_classes = get_params_by_category(args.category)
+    params, num_classes, y_ind = get_params_by_category(category if category else args.category)
     conv_root = args.conv_root
     if args.use_librosa:
         conv_root = conv_root + '/librosa/'
@@ -50,7 +119,7 @@ def train(args):
                               use_gpu=use_gpu, bidirectional=args.bidirectional, dropout=args.dropout)
     if use_gpu:
         model = model.cuda()
-    train_loader, val_loader = get_train_val_seq_dataloader(conv_list, args.batch_size)
+    train_loader, val_loader = get_train_val_seq_dataloader(conv_list, args.batch_size, y_ind)
     log_path = './logs/{:%Y_%m_%d_%H_%M}_{}'.format(datetime.datetime.now(), args.model)
     writer = SummaryWriter(log_path)
     loss_criterion = nn.CrossEntropyLoss(ignore_index=-1)
@@ -94,48 +163,20 @@ def train(args):
 
     log.info('Finished Training')
     acc = val_model(model, val_loader, num_classes, print_results=True)
+
     # save pretrained model
+    # TODO save model in folders by category
     if args.save_model:
         torch.save(model,
                    f"pretrained/{args.model}_bi_{args.bidirectional}_{args.category}_{'librosa' if args.use_librosa else 'mauch'}_acc_"
                    f"{acc}_lr_{args.lr}_wd_{args.weight_decay}_nl_{args.num_layers}_hd_{args.hidden_dim}_ne_{args.num_epochs}"
                    f"_sss_{args.sch_step_size}_sg_{args.sch_gamma}_opt_{args.opt}")
+    return model
 
 
 def val_model(model, test_loader, num_classes, print_results=False):
-    def count_scores(pred, corr, scores):
-        pred = pred.view(-1)
-        corr = corr.view(-1)
-        for c, p in zip(corr, pred):
-            scores[c][p] += 1
-
-    def draw_results():
-        import matplotlib.pyplot as plt
-        import matplotlib.ticker as ticker
-        # Normalize by dividing every row by its sum
-        for i in range(num_classes):
-            scores[i] = scores[i] / scores[i].sum()
-
-        # Set up plot
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        cax = ax.matshow(scores.numpy())
-        fig.colorbar(cax)
-
-        # Set up axes
-        ax.set_xticklabels([''] + list(range(num_classes)), rotation=90)
-        ax.set_yticklabels([''] + list(range(num_classes)))
-
-        # Force label at every tick
-        ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
-        ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
-
-        # sphinx_gallery_thumbnail_number = 2
-        plt.show()
-
     model.eval()
     correct, total, acc = 0, 0, 0
-    scores = torch.zeros(13, 13)
     with torch.no_grad():
         for data in test_loader:
             inputs, labels, lengths = data
@@ -146,15 +187,12 @@ def val_model(model, test_loader, num_classes, print_results=False):
             labels = labels.view(-1)
             predicted = predicted[labels >= 0]
             labels = labels[labels >= 0]
-            if print_results:
-                count_scores(predicted, labels, scores)
             total += len(labels)
             correct += (predicted == labels).sum().item()
     if total:
         acc = 100 * correct / total
     if print_results:
         log.info(f'Val acc: {acc}')
-        draw_results()
     return acc
 
 
@@ -175,4 +213,4 @@ if __name__ == '__main__':
     parser = get_train_rnn_parser()
     args = parser.parse_args(sys.argv[1:])
     log.info('Arguments:\n' + pformat(args.__dict__))
-    train(args)
+    train_nets(args)

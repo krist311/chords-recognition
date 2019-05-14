@@ -44,6 +44,7 @@ def get_train_rf_parser():
 def get_train_rnn_parser():
     parser = get_train_parser()
     parser.add_argument('--model', type=str, required=True)
+    parser.add_argument('--multiple_nets', type=bool, default=False)
     parser.add_argument('--opt', type=str, default='Adam', help='optimizer:SGD or Adam, default: Adam')
     parser.add_argument('--num_epochs', default=2, type=int)
     parser.add_argument('--lr', default=0.01, type=float)

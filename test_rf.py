@@ -12,7 +12,7 @@ if __name__ == '__main__':
     args = parser.parse_args(sys.argv[1:])
     log.info('Arguments:\n' + pformat(args.__dict__))
     model = load_model(args.model)
-    params, y_size = get_params_by_category(args.category)
+    params, y_size, y_ind = get_params_by_category(args.category)
     conv_list = args.conv_list
     if not conv_list:
         conv_list = gen_train_data(args.songs_list, args.audio_root, args.gt_root, params, args.conv_root,
