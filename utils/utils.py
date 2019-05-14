@@ -19,7 +19,7 @@ def get_params_by_category(category):
     elif category == 'MirexSevenths':
         params = mirex_seventh_params
     elif category == 'maj_min_7':
-        params = maj_min_seventh_params()
+        params = maj_min_seventh_params
     elif category == 'MirexSeventhsBass':
         params = mirex_seventh_bass_params
     elif category == 'bass7':

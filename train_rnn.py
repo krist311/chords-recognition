@@ -21,28 +21,43 @@ from utils.utils import get_params_by_category, save_model
 torch.set_default_dtype(torch.float64)
 
 
-def val_maj_min(root_model, maj_min_model, val_loader):
+def val_muiltiple_nets(root_model, type_model, val_loader, category, bass_model=None):
     root_model.eval()
-    maj_min_model.eval()
+    type_model.eval()
     correct, total, acc = 0, 0, 0
     with torch.no_grad():
         for data in val_loader:
             inputs, labels, lengths = data
             if torch.cuda.is_available():
-                inputs, labels = inputs.cuda(), labels.cuda()
+                inputs = inputs.cuda()
             root_outputs = root_model(inputs, lengths)
             root_predicted = root_outputs.topk(1, dim=2)[1].squeeze().view(-1)
-            maj_min_outputs = maj_min_model(inputs, lengths)
-            maj_min_predicted = maj_min_outputs.topk(1, dim=2)[1].squeeze().view(-1)
+            type_outputs = type_model(inputs, lengths)
+            type_predicted = type_outputs.topk(1, dim=2)[1].squeeze().view(-1)
 
-            # make final prediction
             chord_nums = []
-            for root, chord_type in zip(root_predicted, maj_min_predicted):
-                if not root or not chord_type:
-                    chord_nums.append('0')
-                else:
-                    chord_nums.append(f"{root}:{TypesConverter.ind_to_type(chord_type.item())}")
-            predicted = chord_nums_to_inds(chord_nums, 'MirexMajMin')
+            if bass_model:
+                bass_model.eval()
+                bass_outputs = bass_model(inputs, lengths)
+                bass_predicted = bass_outputs.topk(1, dim=2)[1].squeeze().view(-1)
+                for root, chord_type, bass in zip(root_predicted, type_predicted, bass_predicted):
+                    if not root or not chord_type:
+                        chord_nums.append('0')
+                    else:
+                        chord_type = TypesConverter.ind_to_type(chord_type.item())
+                        bass = TypesConverter.ind_to_bass(bass.item())
+                        if ('min' in chord_type and (bass == '3' or bass == '7')) or (
+                                chord_type == '7' and bass == '7'):
+                            bass = f"b{bass}"
+                        chord_nums.append(f"{root}:{chord_type}{f'/{bass}' if bass else ''}")
+            # make final prediction
+            else:
+                for root, chord_type in zip(root_predicted, type_predicted):
+                    if not root or not chord_type:
+                        chord_nums.append('0')
+                    else:
+                        chord_nums.append(f"{root}:{TypesConverter.ind_to_type(chord_type.item())}")
+            predicted = chord_nums_to_inds(chord_nums, category)
 
             labels = labels.view(-1)
             predicted = torch.tensor(predicted)[labels >= 0]
@@ -64,7 +79,7 @@ def train_nets(args):
             maj_min_model = train(args, 'maj_min')
             params, num_classes, y_ind = get_params_by_category(args.category)
             _, val_loader = get_train_val_seq_dataloader(args.conv_list, args.batch_size, y_ind)
-            val_maj_min(root_model,maj_min_model, val_loader)
+            val_muiltiple_nets(root_model, maj_min_model, val_loader, args.category)
         else:
             train(args)
     elif args.category == 'MirexMajMinBass':
@@ -72,12 +87,18 @@ def train_nets(args):
             root_model = train(args, 'MirexRoot')
             maj_min_model = train(args, 'maj_min')
             bass_model = train(args, 'bass')
+            params, num_classes, y_ind = get_params_by_category(args.category)
+            _, val_loader = get_train_val_seq_dataloader(args.conv_list, args.batch_size, y_ind)
+            val_muiltiple_nets(root_model, maj_min_model, val_loader, args.category, bass_model)
         else:
             train(args)
     elif args.category == 'MirexSevenths':
         if args.multiple_nets:
             root_model = train(args, 'MirexRoot')
             maj_min_7_model = train(args, 'maj_min_7')
+            params, num_classes, y_ind = get_params_by_category(args.category)
+            _, val_loader = get_train_val_seq_dataloader(args.conv_list, args.batch_size, y_ind)
+            val_muiltiple_nets(root_model, maj_min_7_model, val_loader,args.category)
         else:
             train(args)
     elif args.category == 'MirexSeventhsBass':
@@ -85,6 +106,9 @@ def train_nets(args):
             root_model = train(args, 'MirexRoot')
             maj_min_7_model = train(args, 'maj_min_7')
             bass_model = train(args, 'bass7')
+            params, num_classes, y_ind = get_params_by_category(args.category)
+            _, val_loader = get_train_val_seq_dataloader(args.conv_list, args.batch_size, y_ind)
+            val_muiltiple_nets(root_model, maj_min_7_model, val_loader, args.category, bass_model)
         else:
             train(args)
 
