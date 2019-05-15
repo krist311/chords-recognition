@@ -156,7 +156,7 @@ def preds_to_lab(y, hop_size, fs, category, save_path, song_name):
         results.append(f"{start_time}	{end_time}	{y_prev}")
         start_time = end_time
         y_prev = chord_name
-    predicted_path = f"{save_path}/{song_name}_pred.lab"
+    predicted_path = f"{save_path}/{song_name}.lab"
     # create folder for saving predictions
     os.makedirs(predicted_path[:-len(predicted_path.split('/')[-1])], exist_ok=True)
     np.savetxt(predicted_path, results, delimiter=",", fmt='%s')

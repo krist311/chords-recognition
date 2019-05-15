@@ -12,6 +12,7 @@ mkdir -p audio
 gdrive_download 1WzdcHeLeFHrYu_2_NDTEEglfrKLLKc1c ./audio/TheBeatles.zip
 gdrive_download 161eEk-o1ulujRh_n-hYmQxlwdmbhWWja ./audio/billboard.zip
 gdrive_download 1GVBNRwZ_YFHD9aroqP_NaI57H07_R3GR ./audio/Queen_CaroleKing.zip
+gdrive_download 1s55LgFKyybeSueruV8Xvtwh6TE4yJnAb ./audio/Jay_Chou.zip
 #download converted by librosa audio
 gdrive_download 1hiTi_CPKxu9Qpli-zch1vINa4iY5iE9s ./converted/librosa/TheBeatles.zip
 gdrive_download 1FGgskDBUn7KTbLSXURgh_rqjbvR1_F1L ./converted/librosa/USPop179.zip
@@ -28,6 +29,9 @@ gdrive_download 1m8wC0vAc4p-HbNx68PH1gOfSKv2FE_EU ../FullList386_converted_libro
 unzip -q audio/TheBeatles.zip -d audio
 unzip -q audio/billboard.zip -d audio
 unzip -q audio/Queen_CaroleKing.zip -d audio
+unzip -q audio/Jay_Chou.zip -d audio
+
+
 unzip -q converted/librosa/TheBeatles.zip -d converted/librosa
 unzip -q converted/librosa/USPop179.zip -d converted/librosa
 unzip -q converted/librosa/CaroleKing_Queen.zip -d converted/librosa
@@ -36,6 +40,8 @@ unzip -q converted/mauch/TheBeatles.zip -d converted/mauch
 rm -f audio/TheBeatles.zip
 rm -f audio/billboard.zip
 rm -f audio/Queen_CaroleKing.zip
+rm -f audio/Jay_Chou.zip
+
 rm -f converted/librosa/TheBeatles.zip
 rm -f converted/librosa/USPop179.zip
 rm -f converted/librosa/CaroleKing_Queen.zip

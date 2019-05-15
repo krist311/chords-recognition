@@ -34,7 +34,7 @@ def val_muiltiple_nets(root_model, type_model, val_loader, category, bass_model=
             root_predicted = root_outputs.topk(1, dim=2)[1].squeeze().view(-1)
             type_outputs = type_model(inputs, lengths)
             type_predicted = type_outputs.topk(1, dim=2)[1].squeeze().view(-1)
-
+            # make final prediction
             chord_nums = []
             if bass_model:
                 bass_model.eval()
@@ -50,7 +50,6 @@ def val_muiltiple_nets(root_model, type_model, val_loader, category, bass_model=
                                 chord_type == '7' and bass == '7'):
                             bass = f"b{bass}"
                         chord_nums.append(f"{root}:{chord_type}{f'/{bass}' if bass else ''}")
-            # make final prediction
             else:
                 for root, chord_type in zip(root_predicted, type_predicted):
                     if not root or not chord_type:
