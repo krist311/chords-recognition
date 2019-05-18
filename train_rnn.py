@@ -192,6 +192,22 @@ def train(args, category=None):
                     running_loss = 0.0
                     model.train()
                 pbar.update()
+                #save checkpoint every 10 epochs
+                if epoch %10 ==0:
+                    import numpy as np
+                    rand = np.random.randint(50)
+                    torch.save({
+                        'epoch': epoch,
+                        'model_state_dict': model.state_dict(),
+                        'optimizer_state_dict': optimizer.state_dict(),
+                        'loss': loss,
+                        'sch_state_dict': scheduler.state_dict()
+                    }, f'checkpoint{rand}.tar')
+                    print(f'saving as checkpoint{rand}.tar')
+                    if 'google' in sys.modules:
+                        from google.colab import files
+                        files.download(f'saving as checkpoint{rand}.tar')
+
             # disable dropout on last 10 epochs
             if args.num_epochs - epoch == 10:
                 model.disable_dropout()
@@ -202,7 +218,7 @@ def train(args, category=None):
     # save pretrained model
     # TODO save model in folders by category
     if args.save_model:
-        torch.save(model,
+        torch.save(model.state_dict(),
                    f"pretrained/{args.model}_bi_{args.bidirectional}_{args.category}_{'librosa' if args.use_librosa else 'mauch'}_acc_"
                    f"{acc}_lr_{args.lr}_wd_{args.weight_decay}_nl_{args.num_layers}_hd_{args.hidden_dim}_ne_{args.num_epochs}"
                    f"_sss_{args.sch_step_size}_sg_{args.sch_gamma}_opt_{args.opt}")
