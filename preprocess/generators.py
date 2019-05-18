@@ -1,6 +1,8 @@
 # Generate training data based on the ground truth files
 # this process leverages the frontend and the ground truth data
 import os
+
+import math
 import numpy as np
 
 from preprocess.chords import convert_gt, chord_nums_to_inds, chords_nums_to_inds
@@ -73,7 +75,7 @@ def gen_train_data(songs_list, audio_root, gt_root, params, converted_root=None,
     def split(data, subsong_len):
         # convert len in seconds to indexes
         inds_len = int(subsong_len * (param['fs'] / param['hop_size']))
-        return np.array_split(data, round(len(data) / inds_len))
+        return np.array_split(data, math.ceil(len(data) / inds_len))
 
     def mod_y(y, mod_step):
         y_mod = []

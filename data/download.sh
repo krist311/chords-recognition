@@ -14,13 +14,13 @@ gdrive_download 161eEk-o1ulujRh_n-hYmQxlwdmbhWWja ./audio/billboard.zip
 gdrive_download 1GVBNRwZ_YFHD9aroqP_NaI57H07_R3GR ./audio/Queen_CaroleKing.zip
 gdrive_download 1s55LgFKyybeSueruV8Xvtwh6TE4yJnAb ./audio/Jay_Chou.zip
 #download converted by librosa audio
-gdrive_download 1hiTi_CPKxu9Qpli-zch1vINa4iY5iE9s ./converted/librosa/TheBeatles.zip
-gdrive_download 1FGgskDBUn7KTbLSXURgh_rqjbvR1_F1L ./converted/librosa/USPop179.zip
-gdrive_download 1fMlv_i8lAqMSKNMwu6Pr5sG0aG5JduDP ./converted/librosa/CaroleKing_Queen.zip
+gdrive_download 19aXFrhoZdg3Jvf6tDpkPwPFMznuLUW1U ./converted/librosa/TheBeatles.zip
+gdrive_download 1w8Mo2r6ml1v76SiU3MTjgoWiNjFLOH9a ./converted/librosa/USPop179.zip
+gdrive_download 1WbyWA4UcYuMHw7QvXMpb-i1PJrpKDKiZ ./converted/librosa/CaroleKing_Queen.zip
 #download converted by Mauch's algorithm
 gdrive_download 1WzdcHeLeFHrYu_2_NDTEEglfrKLLKc1c ./converted/mauch/TheBeatles.zip
 #download converted list
-gdrive_download 11fJyHqZGN0baKEjYlaFdVqsnUTIkCJb3 ../TheBeatles180List_converted_librosa.txt
+gdrive_download 1wagyEwmqS6rX1CqIptFtzHVNkVHQOoJD ../TheBeatles180List_converted_librosa.txt
 gdrive_download 1ny7Vyir9sEVIMqnFa-3gkPVd7f46wUY1 ../TheBeatles180List_converted_mauch.txt
 gdrive_download 1V5zdvcB50YLfnTlsKyZspvTuVbWghrLE ../USPop179List_converted_librosa.txt
 gdrive_download 1vMFUvgJrAzCsO4PjZ98pYkirGRGNt3Sk ../CaroleKingQueen26List_converted_librosa.txt

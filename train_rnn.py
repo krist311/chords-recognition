@@ -9,7 +9,7 @@ import glog as log
 from pprint import pformat
 from preprocess.chords import TypesConverter, chord_nums_to_inds
 
-from models import LSTMClassifier, GRUClassifier
+from models import LSTMClassifier, GRUClassifier, AttentionLSTM
 from dataloader import get_train_val_seq_dataloader
 from preprocess.chords import preds_to_lab
 from preprocess.generators import gen_test_data, gen_train_data
@@ -33,24 +33,32 @@ def val_muiltiple_nets(root_model, type_model, val_loader, category, bass_model=
             root_outputs = root_model(inputs, lengths)
             root_predicted = root_outputs.topk(1, dim=2)[1].squeeze().view(-1)
             type_outputs = type_model(inputs, lengths)
-            type_predicted = type_outputs.topk(1, dim=2)[1].squeeze().view(-1)
             # make final prediction
             chord_nums = []
             if bass_model:
+                type_predicted = type_outputs.topk(2, dim=2)[1].view(-1, 2)
                 bass_model.eval()
                 bass_outputs = bass_model(inputs, lengths)
-                bass_predicted = bass_outputs.topk(1, dim=2)[1].squeeze().view(-1)
+                bass_predicted = bass_outputs.topk(2, dim=2)[1].view(-1, 2)
                 for root, chord_type, bass in zip(root_predicted, type_predicted, bass_predicted):
-                    if not root or not chord_type:
+                    if not root:
                         chord_nums.append('0')
                     else:
-                        chord_type = TypesConverter.ind_to_type(chord_type.item())
-                        bass = TypesConverter.ind_to_bass(bass.item())
-                        if ('min' in chord_type and (bass == '3' or bass == '7')) or (
-                                chord_type == '7' and bass == '7'):
-                            bass = f"b{bass}"
-                        chord_nums.append(f"{root}:{chord_type}{f'/{bass}' if bass else ''}")
+                        if not chord_type[0]:
+                            chord_type[0] = chord_type[1]
+                        chord_type_conv = TypesConverter.ind_to_type(chord_type[0].item())
+                        bass_conv = TypesConverter.ind_to_bass(bass[0].item())
+                        if bass_conv == '7' and '7' not in chord_type_conv:
+                            if '7' in TypesConverter.ind_to_type(chord_type[1].item()):
+                                chord_type_conv = TypesConverter.ind_to_type(chord_type[1].item())
+                            else:
+                                bass_conv = TypesConverter.ind_to_bass(bass[1].item())
+                        if ('min' in chord_type_conv and (bass_conv == '3' or bass_conv == '7')) or (
+                                chord_type_conv == '7' and bass_conv == '7'):
+                            bass_conv = f"b{bass_conv}"
+                        chord_nums.append(f"{root}:{chord_type_conv}{f'/{bass_conv}' if bass_conv else ''}")
             else:
+                type_predicted = type_outputs.topk(1, dim=2)[1].squeeze().view(-1)
                 for root, chord_type in zip(root_predicted, type_predicted):
                     if not root or not chord_type:
                         chord_nums.append('0')
@@ -97,7 +105,7 @@ def train_nets(args):
             maj_min_7_model = train(args, 'maj_min_7')
             params, num_classes, y_ind = get_params_by_category(args.category)
             _, val_loader = get_train_val_seq_dataloader(args.conv_list, args.batch_size, y_ind)
-            val_muiltiple_nets(root_model, maj_min_7_model, val_loader,args.category)
+            val_muiltiple_nets(root_model, maj_min_7_model, val_loader, args.category)
         else:
             train(args)
     elif args.category == 'MirexSeventhsBass':
@@ -138,6 +146,10 @@ def train(args, category=None):
                                use_gpu=use_gpu, bidirectional=args.bidirectional, dropout=args.dropout)
     elif args.model == 'GRU':
         model = GRUClassifier(input_size=input_size, hidden_dim=args.hidden_dim, output_size=num_classes,
+                              num_layers=args.num_layers,
+                              use_gpu=use_gpu, bidirectional=args.bidirectional, dropout=args.dropout)
+    elif args.model == 'AttentionLSTM':
+        model = AttentionLSTM(input_size=input_size, hidden_dim=args.hidden_dim, output_size=num_classes,
                               num_layers=args.num_layers,
                               use_gpu=use_gpu, bidirectional=args.bidirectional, dropout=args.dropout)
     if use_gpu:

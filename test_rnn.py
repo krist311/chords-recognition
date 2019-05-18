@@ -11,7 +11,7 @@ from utils.utils import get_params_by_category, load_model
 
 
 def t(model, songs_list, audio_root, params, save_path):
-    param, _, _, _, category, _ = params()
+    param, _, _, _, category, _, _ = params()
     for song_name, X in gen_test_data(songs_list, audio_root, param):
         with torch.no_grad():
             pred = model(torch.tensor(X).cuda())
