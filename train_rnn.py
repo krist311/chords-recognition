@@ -165,8 +165,9 @@ def train(args, category=None):
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args.sch_step_size, gamma=args.sch_gamma)
     model.train()
     with tqdm(total=len(train_loader) * args.num_epochs) as pbar:
+        running_loss = 0.0
         for epoch in range(args.num_epochs):
-            running_loss = 0.0
+            scheduler.step()
             for i, data in enumerate(train_loader, 1):
                 iteration = epoch * len(train_loader) + i
                 inputs, labels, lengths = data
@@ -191,7 +192,6 @@ def train(args, category=None):
                     running_loss = 0.0
                     model.train()
                 pbar.update()
-            scheduler.step()
             # disable dropout on last 10 epochs
             if args.num_epochs - epoch == 10:
                 model.disable_dropout()
