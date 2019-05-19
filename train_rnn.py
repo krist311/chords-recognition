@@ -206,7 +206,7 @@ def train(args, category=None):
                     print(f'saving as checkpoint{rand}.tar')
                     if 'google' in sys.modules:
                         from google.colab import files
-                        files.download(f'saving as checkpoint{rand}.tar')
+                        files.download(f'checkpoint{rand}.tar')
 
             # disable dropout on last 10 epochs
             if args.num_epochs - epoch == 10:
