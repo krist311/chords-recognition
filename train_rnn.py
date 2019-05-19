@@ -204,9 +204,9 @@ def train(args, category=None):
                         'sch_state_dict': scheduler.state_dict()
                     }, f'checkpoint{rand}.tar')
                     print(f'saving as checkpoint{rand}.tar')
-                    if 'google' in sys.modules:
-                        from google.colab import files
-                        files.download(f'checkpoint{rand}.tar')
+                    # if 'google' in sys.modules:
+                    #     from google.colab import files
+                    #     files.download(f'checkpoint{rand}.tar')
 
             # disable dropout on last 10 epochs
             if args.num_epochs - epoch == 10:
