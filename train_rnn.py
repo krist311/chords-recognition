@@ -193,20 +193,20 @@ def train(args, category=None):
                     model.train()
                 pbar.update()
                 #save checkpoint every 10 epochs
-                if epoch %10 ==0:
-                    import numpy as np
-                    rand = np.random.randint(50)
-                    torch.save({
-                        'epoch': epoch,
-                        'model_state_dict': model.state_dict(),
-                        'optimizer_state_dict': optimizer.state_dict(),
-                        'loss': loss,
-                        'sch_state_dict': scheduler.state_dict()
-                    }, f'checkpoint{rand}.tar')
-                    print(f'saving as checkpoint{rand}.tar')
-                    # if 'google' in sys.modules:
-                    #     from google.colab import files
-                    #     files.download(f'checkpoint{rand}.tar')
+            if epoch %10 ==0:
+                import numpy as np
+                rand = np.random.randint(50)
+                torch.save({
+                    'epoch': epoch,
+                    'model_state_dict': model.state_dict(),
+                    'optimizer_state_dict': optimizer.state_dict(),
+                    'loss': loss,
+                    'sch_state_dict': scheduler.state_dict()
+                }, f'checkpoint{rand}.tar')
+                print(f'saving as checkpoint{rand}.tar')
+                # if 'google' in sys.modules:
+                #     from google.colab import files
+                #     files.download(f'checkpoint{rand}.tar')
 
             # disable dropout on last 10 epochs
             if args.num_epochs - epoch == 10:
