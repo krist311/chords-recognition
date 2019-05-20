@@ -138,22 +138,31 @@ def train(args, category=None):
 
     # check if gpu available
     use_gpu = torch.cuda.is_available()
-
+    checkpoint = None
+    if args.checkpoint:
+        checkpoint = torch.load(args.checkpoint)
     # create model
     if args.model == 'LSTM':
         model = LSTMClassifier(input_size=input_size, hidden_dim=args.hidden_dim, output_size=num_classes,
                                num_layers=args.num_layers,
                                use_gpu=use_gpu, bidirectional=args.bidirectional, dropout=args.dropout)
+        if args.checkpoint:
+            model.load_state_dict(checkpoint['model_state_dict'])
     elif args.model == 'GRU':
         model = GRUClassifier(input_size=input_size, hidden_dim=args.hidden_dim, output_size=num_classes,
                               num_layers=args.num_layers,
                               use_gpu=use_gpu, bidirectional=args.bidirectional, dropout=args.dropout)
+        if args.checkpoint:
+            model.load_state_dict(checkpoint['model_state_dict'])
     elif args.model == 'AttentionLSTM':
         model = AttentionLSTM(input_size=input_size, hidden_dim=args.hidden_dim, output_size=num_classes,
                               num_layers=args.num_layers,
                               use_gpu=use_gpu, bidirectional=args.bidirectional, dropout=args.dropout)
     if use_gpu:
         model = model.cuda()
+
+
+
     train_loader, val_loader = get_train_val_seq_dataloader(conv_list, args.batch_size, y_ind)
     log_path = './logs/{:%Y_%m_%d_%H_%M}_{}'.format(datetime.datetime.now(), args.model)
     writer = SummaryWriter(log_path)
@@ -162,11 +171,16 @@ def train(args, category=None):
         optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     else:
         optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
+    if checkpoint:
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    start_epoch = checkpoint['epoch'] if checkpoint else 0
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args.sch_step_size, gamma=args.sch_gamma)
+    if checkpoint:
+        scheduler.load_state_dict(checkpoint['sch_state_dict'])
     model.train()
     with tqdm(total=len(train_loader) * args.num_epochs) as pbar:
         running_loss = 0.0
-        for epoch in range(args.num_epochs):
+        for epoch in range(start_epoch,args.num_epochs):
             scheduler.step()
             for i, data in enumerate(train_loader, 1):
                 iteration = epoch * len(train_loader) + i

@@ -89,7 +89,7 @@ def collate_fn(data):
 
 def get_train_val_seq_dataloader(file_path, batch_size, y_ind):
     df = pd.read_csv(file_path, header=None, sep=' ')
-    train = df.sample(frac=0.8, random_state=200)
+    train = df.sample(frac=0.95, random_state=200)
     val = df.drop(train.index)
     return DataLoader(SeqDatasetConverter(train, y_ind), batch_size=batch_size, shuffle=True,
                       num_workers=4,
