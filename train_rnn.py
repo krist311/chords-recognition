@@ -178,7 +178,7 @@ def train(args, category=None):
     if checkpoint:
         scheduler.load_state_dict(checkpoint['sch_state_dict'])
     model.train()
-    with tqdm(total=len(train_loader) * args.num_epochs) as pbar:
+    with tqdm(total=len(train_loader) * (args.num_epochs-start_epoch)) as pbar:
         running_loss = 0.0
         for epoch in range(start_epoch+1,args.num_epochs):
             scheduler.step()
