@@ -180,7 +180,7 @@ def train(args, category=None):
     model.train()
     with tqdm(total=len(train_loader) * args.num_epochs) as pbar:
         running_loss = 0.0
-        for epoch in range(start_epoch,args.num_epochs):
+        for epoch in range(start_epoch+1,args.num_epochs):
             scheduler.step()
             for i, data in enumerate(train_loader, 1):
                 iteration = epoch * len(train_loader) + i
@@ -207,7 +207,7 @@ def train(args, category=None):
                     model.train()
                 pbar.update()
                 #save checkpoint every 10 epochs
-            if epoch %10 ==0:
+            if epoch %2 ==0:
                 import numpy as np
                 rand = np.random.randint(50)
                 torch.save({
