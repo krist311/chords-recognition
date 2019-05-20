@@ -207,7 +207,7 @@ def train(args, category=None):
                     model.train()
                 pbar.update()
                 #save checkpoint every 10 epochs
-            if epoch %2 ==0:
+            if epoch %10 ==0:
                 import numpy as np
                 rand = np.random.randint(50)
                 torch.save({
