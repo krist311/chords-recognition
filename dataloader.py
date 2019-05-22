@@ -72,24 +72,26 @@ def collate_fn(data):
     src_seqs, gt_seqs = zip(*data)
 
     lengths = [len(seq) for seq in src_seqs]
+
     # pad src
-    padded_seqs = torch.full((len(src_seqs), max(lengths), src_seqs[0].shape[1]), -1)
+    padded_seqs = torch.full((len(src_seqs), 850, src_seqs[0].shape[1]), -1)
     for i, seq in enumerate(src_seqs):
         padded_seqs[i, :lengths[i]] = seq
     src_seqs = padded_seqs.double()
 
     #pad gt
-    padded_seqs = torch.full((len(gt_seqs), max(lengths)), -1)
+    padded_seqs = torch.full((len(gt_seqs), 850), -1)
     for i, seq in enumerate(gt_seqs):
         padded_seqs[i, :lengths[i]] = seq
     gt_seqs = padded_seqs.long()
+    lengths[0] = 850
 
     return src_seqs, gt_seqs, lengths
 
 
 def get_train_val_seq_dataloader(file_path, batch_size, y_ind):
     df = pd.read_csv(file_path, header=None, sep=' ')
-    train = df.sample(frac=0.95, random_state=200)
+    train = df.sample(frac=0.8, random_state=200)
     val = df.drop(train.index)
     return DataLoader(SeqDatasetConverter(train, y_ind), batch_size=batch_size, shuffle=True,
                       num_workers=4,
