@@ -330,9 +330,9 @@ class AttentionLSTM(torch.nn.Module):
         self.W2 = nn.Linear(850, 850)
         self.V = nn.Linear(850, 850)
         ###self.hidden2out = nn.Linear(hidden_dim * self.num_directions, output_size)
-        self.bn1 = nn.BatchNorm1d(hidden_dim * self.num_directions)
+        self.bn1 = nn.BatchNorm1d(hidden_dim)
         self.dropout2 = nn.Dropout(p=dropout[2])
-        self.hidden2out = nn.Linear(hidden_dim * self.num_directions, output_size)
+        self.hidden2out = nn.Linear(hidden_dim, output_size)
 
     def disable_dropout(self):
         self.lstm.dropout = .0
@@ -352,6 +352,8 @@ class AttentionLSTM(torch.nn.Module):
                 torch.zeros(self.num_layers * self.num_directions, batch_size, self.hidden_dim, dtype=torch.float64))
 
     def attention_net(self, lstm_output, final_state):
+        if self.num_directions ==2:
+            lstm_output = lstm_output[:,:,:self.hidden_dim].add(lstm_output[:,:,self.hidden_dim:])
         # lstm_output - [batch_size, seq_len, h_dim], attn_weights - [batch_size, seq_len, seq_len]
         attn_weights = torch.bmm(lstm_output,lstm_output.transpose(1, 2))  # attn_weights - [batch_size, seq_len]
         soft_attn_weights = F.softmax(attn_weights, 1)
