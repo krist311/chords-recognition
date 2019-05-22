@@ -502,6 +502,7 @@ class GRUClassifier(nn.Module):
         self.dropout1 = nn.Dropout(p=dropout[0])
         self.gru = nn.GRU(input_size, hidden_dim, num_layers=self.num_layers, batch_first=True,
                           bidirectional=bidirectional, dropout=dropout[1])
+        self.bn1 = nn.BatchNorm1d(hidden_dim * self.num_directions)
         self.hidden2out = nn.Linear(hidden_dim * self.num_directions, output_size)
         self.dropout2 = nn.Dropout(p=dropout[2])
 
