@@ -352,59 +352,15 @@ class AttentionLSTM(torch.nn.Module):
                 torch.zeros(self.num_layers * self.num_directions, batch_size, self.hidden_dim, dtype=torch.float64))
 
     def attention_net(self, lstm_output, final_state):
-        # #[batch_size, seq_len, h_dim]
-        # w1_lstm_output = self.W1(lstm_output)
-        # w2_lstm_output = self.W2(lstm_output)
-        #
-        # #iterate over seq len
-        # score = torch.zeros((lstm_output.size()[0],lstm_output.size()[1],lstm_output.size()[1]))
-        # for hidden_ind in range(w2_lstm_output.size()[1]):
-        #     #[batch_size, h_dim)
-        #     hidden_with_time_axis = w2_lstm_output[:,hidden_ind,:].unsqueeze(1)
-        #
-        #     # score shape == (batch_size, max_length, 1)
-        #     # we get 1 at the last axis because we are applying tanh(FC(EO) + FC(H)) to self.V
-        #     # this is the step 1 described in the blog to compute scores s1, s2, ...
-        #     cur_score = self.V(w1_lstm_output + hidden_with_time_axis).squeeze(2)
-        #     score[:,:,hidden_ind] = cur_score
-        #
-        #     # attention_weights shape == (batch_size, max_length, 1)
-        #     # this is the step 2 described in the blog to compute attention weights e1, e2, ...
-        #
-        # attention_weights = F.softmax(score, axis=1)
-        #
-        #
-        # # context_vector shape after sum == (batch_size, hidden_size)
-        # # this is the step 3 described in the blog to compute the context_vector = e1*h1 + e2*h2 + ...
-        # #context_vector = attention_weights * enc_output
-        # #context_vector = tf.reduce_sum(context_vector, axis=1)
-        #
-        # # x shape after passing through embedding == (batch_size, 1, embedding_dim)
-        # #x = self.embedding(x)
-        #
-        # # x shape after concatenation == (batch_size, 1, embedding_dim + hidden_size)
-        # # this is the step 4 described in the blog to concatenate the context vector with the output of the previous time step
-        # #x = tf.concat([tf.expand_dims(context_vector, 1), x], axis=-1)
-        #
-        # # passing the concatenated vector to the GRU
-        #
-        # # output shape == (batch_size * 1, hidden_size)
-        # #output = tf.reshape(output, (-1, output.shape[2]))
-        #
-        # # output shape == (batch_size * 1, vocab)
-        # # this is the step 5 in the blog, to compute the next output word in the sequence
-        # x = self.fc(output)
-        #
-        #
-        #
-        #
-        #
-        #
         # lstm_output - [batch_size, seq_len, h_dim], attn_weights - [batch_size, seq_len, seq_len]
-        attn_weights = self.V(torch.tanh(torch.bmm(self.W1(lstm_output), self.W2(
-            lstm_output.transpose(1, 2)))))  # attn_weights - [batch_size, seq_len]
+        attn_weights = torch.bmm(lstm_output,lstm_output.transpose(1, 2))  # attn_weights - [batch_size, seq_len]
         soft_attn_weights = F.softmax(attn_weights, 1)
         new_hidden_state = torch.bmm(lstm_output.transpose(1, 2), soft_attn_weights).transpose(1, 2)
+
+        # attn_weights = self.V(torch.tanh(torch.bmm(self.W1(lstm_output), self.W2(
+        #     lstm_output.transpose(1, 2)))))  # attn_weights - [batch_size, seq_len]
+        # soft_attn_weights = F.softmax(attn_weights, 1)
+        # new_hidden_state = torch.bmm(lstm_output.transpose(1, 2), soft_attn_weights).transpose(1, 2)
 
         return new_hidden_state
 
