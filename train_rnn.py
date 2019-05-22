@@ -7,9 +7,10 @@ from tensorboardX import SummaryWriter
 from tqdm import tqdm
 import glog as log
 from pprint import pformat
+
 from preprocess.chords import TypesConverter, chord_nums_to_inds
 
-from models import LSTMClassifier, GRUClassifier, AttentionLSTM
+from models import LSTMClassifier, GRUClassifier, AttentionLSTM, MSResNet
 from dataloader import get_train_val_seq_dataloader
 from preprocess.chords import preds_to_lab
 from preprocess.generators import gen_test_data, gen_train_data
@@ -158,6 +159,8 @@ def train(args, category=None):
         model = AttentionLSTM(input_size=input_size, hidden_dim=args.hidden_dim, output_size=num_classes,
                               num_layers=args.num_layers,
                               use_gpu=use_gpu, bidirectional=args.bidirectional, dropout=args.dropout)
+    elif args.model == 'CSI':
+        model = MSResNet(input_channel=1, num_classes=num_classes)
     if use_gpu:
         model = model.cuda()
 
