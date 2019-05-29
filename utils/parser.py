@@ -71,3 +71,8 @@ def get_test_parser():
     parser.add_argument('--lab_path', type=str, default='data/predicted')
     parser.add_argument('--test_list', type=str)
     return parser
+
+def get_realtime_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--category', type=str, required=True)
+    return parser

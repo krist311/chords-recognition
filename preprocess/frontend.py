@@ -15,7 +15,7 @@ def preprocess_librosa(audiopath, feparam, n_bins=84, bins_per_octave=12, mod_st
     tuning = librosa.estimate_tuning(y=x, sr=sr)
     for mod_step in mod_steps:
         X_pitched = librosa.effects.pitch_shift(x, sr, n_steps=mod_step)
-        X = np.abs(librosa.core.cqt(X_pitched,sr=sr, n_bins=n_bins, bins_per_octave=bins_per_octave, tuning=tuning, window='hamming', norm=2))
+        X = np.abs(librosa.core.cqt(X_pitched, sr=sr, n_bins=n_bins, bins_per_octave=bins_per_octave, tuning=tuning, window='hamming', norm=2))
         Xs.append(X.T)
     return Xs
 

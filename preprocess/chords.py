@@ -139,11 +139,12 @@ def chord_to_categories(chord):
     return nums
 
 
-def preds_to_lab(y, hop_size, fs, category, save_path, song_name):
-    def ind_to_chord_names(inds, category):
-        _, ind_to_name = create_chords_list(category)
-        return [ind_to_name[ind] for ind in inds]
+def ind_to_chord_names(inds, category):
+    _, ind_to_name = create_chords_list(category)
+    return [ind_to_name[ind] for ind in inds]
 
+
+def preds_to_lab(y, hop_size, fs, category, save_path, song_name):
     results = []
     start_time = 0.0
     chord_names = ind_to_chord_names(y, category)
@@ -156,10 +157,12 @@ def preds_to_lab(y, hop_size, fs, category, save_path, song_name):
         results.append(f"{start_time}	{end_time}	{y_prev}")
         start_time = end_time
         y_prev = chord_name
-    predicted_path = f"{save_path}/{song_name}.lab"
-    # create folder for saving predictions
-    os.makedirs(predicted_path[:-len(predicted_path.split('/')[-1])], exist_ok=True)
-    np.savetxt(predicted_path, results, delimiter=",", fmt='%s')
+    if save_path:
+        predicted_path = f"{save_path}/{song_name}.lab"
+        # create folder for saving predictions
+        os.makedirs(predicted_path[:-len(predicted_path.split('/')[-1])], exist_ok=True)
+        np.savetxt(predicted_path, results, delimiter=",", fmt='%s')
+    return results
 
 
 def chords_nums_to_inds(chords_nums):

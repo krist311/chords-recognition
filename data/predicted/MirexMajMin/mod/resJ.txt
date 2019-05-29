@@ -1,0 +1,39 @@
+List: "C:\Users\Daniil\Documents\Git\vkr\data\tracklists\JayChou29List"
+
+**********************
+* Chords MirexMajMin *
+**********************
+Duration of evaluated chords: 7232.96 s
+Average score: 69.5874%
+
+Chord detection results
+-----------------------
+Correct chords: 4902.95 s (67.7862%)
+Substituted chords: 2064.71 s (28.5459%)
+Deleted chords: 26.2196 s (0.362502%)
+Inserted chords: 108.798 s (1.50419%)
+Correct no-chords: 130.28 s (1.8012%)
+
+Results per chord type
+----------------------
+maj: 3003.07 s (69.3598%) of 4329.71 s (59.8608%)
+min: 1899.88 s (71.3119%) of 2664.18 s (36.8338%)
+
+Results per number of chromas wrong
+-----------------------------------
+0 chromas wrong: 4902.95 s (67.7862%)
+  of which root correct: 4902.95 s (67.7862%)
+  of which root incorrect: 0 s (0%)
+1 chroma wrong: 646.372 s (8.93648%)
+  of which 1 substitution: 646.372 s (8.93648%)
+2 chromas wrong: 976.47 s (13.5003%)
+  of which 2 substitutions: 976.47 s (13.5003%)
+3 chromas wrong: 441.87 s (6.10912%)
+  of which 3 substitutions: 441.87 s (6.10912%)
+
+Root/type results
+-----------------
+Both correct: 4902.95 s (67.7862%)
+Only root correct: 156.047 s (2.15744%)
+Only type correct: 990.343 s (13.6921%)
+Both wrong: 918.323 s (12.6964%)

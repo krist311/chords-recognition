@@ -1,0 +1,45 @@
+List: "C:\Users\Daniil\Documents\Git\vkr\data\tracklists\JayChou29List"
+
+**************************
+* Chords MirexMajMinBass *
+**************************
+Duration of evaluated chords: 7232.96 s
+Average score: 66.0991%
+
+Chord detection results
+-----------------------
+Correct chords: 4650.07 s (64.2901%)
+Substituted chords: 2324.66 s (32.1398%)
+Deleted chords: 19.1529 s (0.2648%)
+Inserted chords: 108.232 s (1.49638%)
+Correct no-chords: 130.845 s (1.80901%)
+
+Results per chord type
+----------------------
+maj/1: 0 s (n/a) of 0 s (0%)
+maj/5: 66.8712 s (17.487%) of 382.404 s (5.28697%)
+maj/3: 331.025 s (48.6724%) of 680.107 s (9.40289%)
+maj: 2428.75 s (74.3376%) of 3267.19 s (45.1709%)
+min/1: 0 s (n/a) of 0 s (0%)
+min/5: 11.339 s (10.7446%) of 105.531 s (1.45903%)
+min/b3: 24.4041 s (21.5989%) of 112.988 s (1.56213%)
+min: 1787.68 s (73.0962%) of 2445.66 s (33.8127%)
+
+Results per number of chromas wrong
+-----------------------------------
+0 chromas wrong: 4846.7 s (67.0085%)
+  of which root correct: 4650.07 s (64.2901%)
+  of which root incorrect: 196.627 s (2.71849%)
+1 chroma wrong: 630.946 s (8.72321%)
+  of which 1 substitution: 630.946 s (8.72321%)
+2 chromas wrong: 1022.07 s (14.1308%)
+  of which 2 substitutions: 1022.07 s (14.1308%)
+3 chromas wrong: 475.01 s (6.5673%)
+  of which 3 substitutions: 475.01 s (6.5673%)
+
+Root/type results
+-----------------
+Both correct: 4650.07 s (64.2901%)
+Only root correct: 360.959 s (4.99047%)
+Only type correct: 629.699 s (8.70596%)
+Both wrong: 1334 s (18.4433%)

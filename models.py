@@ -420,7 +420,7 @@ class LSTMClassifier(nn.Module):
         self.dropout2.p = .0
 
     def init_hidden(self, batch_size):
-        if self.use_gpu:
+        if torch.cuda.is_available():
             return (
                 torch.zeros(self.num_layers * self.num_directions, batch_size, self.hidden_dim,
                             dtype=torch.float64).cuda(),

@@ -15,7 +15,11 @@ def t(model, songs_list, audio_root, params, save_path):
     param, _, _, _, category, _, _ = params()
     for song_name, X in gen_test_data(songs_list, audio_root, param):
         with torch.no_grad():
-            pred = model(torch.tensor(X).cuda())
+            if torch.cuda.is_available():
+                X = torch.tensor(X).cuda()
+            else:
+                X = torch.tensor(X)
+            pred = model(X)
             y = pred.topk(1, dim=2)[1].squeeze().view(-1)
             preds_to_lab(y, param['hop_size'], param['fs'], category, save_path, song_name)
 
@@ -23,15 +27,16 @@ def t(model, songs_list, audio_root, params, save_path):
 if __name__ == '__main__':
     parser = get_test_parser()
     args = parser.parse_args(sys.argv[1:])
-    model = torch.load(args.model)
-    model.eval()
 
     params, y_size, y_ind = get_params_by_category(args.category)
     model = LSTMClassifier(input_size=84, hidden_dim=128, output_size=y_size,
-                           num_layers=args.num_layers,
-                           use_gpu=True, bidirectional=True, dropout=[0.4,0.0,0.0])
-
-    model.load_state_dict(torch.load(args.model))
+                           num_layers=3,
+                           use_gpu=True, bidirectional=True, dropout=[0.4, 0.0, 0.0])
+    if torch.cuda.is_available():
+        model = model.cuda()
+        model.load_state_dict(torch.load(args.model))
+    else:
+        model.load_state_dict(torch.load(args.model, map_location='cpu'))
     model.eval()
     conv_list = args.conv_list
     if args.save_as_lab:
