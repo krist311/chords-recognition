@@ -35,6 +35,8 @@ unzip -q audio/Jay_Chou.zip -d audio
 unzip -q converted/librosa/TheBeatles.zip -d converted/librosa
 unzip -q converted/librosa/USPop179.zip -d converted/librosa
 unzip -q converted/librosa/CaroleKing_Queen.zip -d converted/librosa
+unzip -q converted/librosa/fullmod-1-3.zip -d converted/librosa
+unzip -q converted/librosa/fullmod24.zip -d converted/librosa
 
 rm -f audio/TheBeatles.zip
 rm -f audio/billboard.zip
@@ -44,5 +46,7 @@ rm -f audio/Jay_Chou.zip
 rm -f converted/librosa/TheBeatles.zip
 rm -f converted/librosa/USPop179.zip
 rm -f converted/librosa/CaroleKing_Queen.zip
+rm -f converted/librosa/fullmod24.zip
+rm -f converted/librosa/fullmod-1-3.zip
 
 echo OK
