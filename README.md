@@ -43,10 +43,12 @@ python preprocess.py --songs_list data/tracklists/TheBeatles180List
 --audio_root, default: data/audio/<br>
 --gt_root, default: data/gt/<br>
 --conv_root, default: data/converted/, determines folder where converted datasets will be saved<br>
---category, default: MirexRoot<br>
 --subsong_len, default: 40, length of song part in seconds to be splitted during preprocess<br> 
 --song_len, default: 180 if <i>subsong_len</i> is not specified, song will be cutted or zeropaded to <i>song_len</i><br> 
---use_librosa, default: True
+--use_librosa, default: True, by default librosa.cqt will be used for preprocessing<br>
+--songs_list, required, examples could be found in data/tracklists<br>
+--num_bins, default: 84, defines number of bins during cqt<br>
+--modulation_steps, list, default: [0], defines amount of modulation steps during CQT-preprocessing <br>
 # Models:
 ## LSTM
   <br>Accuracy on test-set: 65%
