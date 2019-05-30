@@ -51,7 +51,6 @@ python preprocess.py --songs_list data/tracklists/TheBeatles180List
 --modulation_steps, list, default: [0], defines amount of modulation steps during CQT-preprocessing <br>
 # Models:
 ## LSTM
-  <br>Accuracy on test-set: 65%
 ### How to use:
 ```
 python train_rnn.py --model LSTM --conv_list TheBeatles180List_converted_librosa.txt
@@ -127,3 +126,13 @@ python test_rf.py --model pretrained/RF_MirexRoot_TheBeatles180_librosa.pkl --co
 --category, default: MirexRoot<br>
 --subsong_len, default: 40, length of song part in seconds to be splitted during preprocess<br>
 --song_len, default: 180 if <i>subsong_len</i> is not specified, song will be cutted or zeropaded to <i>song_len</i><br> 
+
+# Applications
+## Realtime demo 
+```
+python realtime.py --category MirexRoot
+```
+## Web-application for chords recognition
+```
+python web_app\server.py
+```
