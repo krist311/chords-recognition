@@ -80,6 +80,21 @@ python train_rnn.py --model LSTM --conv_list TheBeatles180List_converted_librosa
 ```
 python test_nn.py --model pretrained/LSTM_MirexRoot_TheBeatles180_librosa.pkl --conv_root data/converted/librosa --conv_list TheBeatles180List_converted_librosa.txt
 ```
+#### Results
+##### Isophonic 2009
+|Model| MirexRoot     | MirexMajMin  | MirexMajMinBass | MirexSevenths | MirexSeventhsBass |
+| ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
+|BiLSTM|95.58%  | 94.59%  | 94.27%  | 90.86%  | 90.6%  |
+|BiLSTM with modulation| 95.31%  | 93.43%  | 94.98%  | 91.67%  | 91.25%  |
+|BiGRU with modulation| 93.69%  | 91.30%  | 90.75%  | 89.46%  | 87.43%  |
+
+##### JayChou
+|Model| MirexRoot     | MirexMajMin  | MirexMajMinBass | MirexSevenths | MirexSeventhsBass |
+| ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
+|BiLSTM|67.7%  | 61.42%  | 59%  | 41%  | 39.33%  |
+|BiLSTM with modulation| 72.04%  | 69.58%  | 66.09%  | 48.97%  | 44.98%  |
+|BiGRU with modulation| 68.59%  | 65.27%  | 62.59%  | 45.08%  | 40.37%  |
+
 ## Random forest
   <br>Accuracy on test-set: Mirex_Root:55%<br>
 ### How to use:
