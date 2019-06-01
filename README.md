@@ -43,13 +43,14 @@ python preprocess.py --songs_list data/tracklists/TheBeatles180List
 --audio_root, default: data/audio/<br>
 --gt_root, default: data/gt/<br>
 --conv_root, default: data/converted/, determines folder where converted datasets will be saved<br>
---category, default: MirexRoot<br>
 --subsong_len, default: 40, length of song part in seconds to be splitted during preprocess<br> 
 --song_len, default: 180 if <i>subsong_len</i> is not specified, song will be cutted or zeropaded to <i>song_len</i><br> 
---use_librosa, default: True
+--use_librosa, default: True, by default librosa.cqt will be used for preprocessing<br>
+--songs_list, required, examples could be found in data/tracklists<br>
+--num_bins, default: 84, defines number of bins during cqt<br>
+--modulation_steps, list, default: [0], defines amount of modulation steps during CQT-preprocessing <br>
 # Models:
 ## LSTM
-  <br>Accuracy on test-set: 65%
 ### How to use:
 ```
 python train_rnn.py --model LSTM --conv_list TheBeatles180List_converted_librosa.txt
@@ -78,6 +79,21 @@ python train_rnn.py --model LSTM --conv_list TheBeatles180List_converted_librosa
 ```
 python test_nn.py --model pretrained/LSTM_MirexRoot_TheBeatles180_librosa.pkl --conv_root data/converted/librosa --conv_list TheBeatles180List_converted_librosa.txt
 ```
+#### Results
+##### Isophonic 2009
+|Model| MirexRoot     | MirexMajMin  | MirexMajMinBass | MirexSevenths | MirexSeventhsBass |
+| ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
+|BiLSTM|95.58%  | 94.59%  | 94.27%  | 90.86%  | 90.6%  |
+|BiLSTM with modulation| 95.31%  | 93.43%  | 94.98%  | 91.67%  | 91.25%  |
+|BiGRU with modulation| 93.69%  | 91.30%  | 90.75%  | 89.46%  | 87.43%  |
+
+##### JayChou
+|Model| MirexRoot     | MirexMajMin  | MirexMajMinBass | MirexSevenths | MirexSeventhsBass |
+| ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
+|BiLSTM|67.7%  | 61.42%  | 59%  | 41%  | 39.33%  |
+|BiLSTM with modulation| 72.04%  | 69.58%  | 66.09%  | 48.97%  | 44.98%  |
+|BiGRU with modulation| 68.59%  | 65.27%  | 62.59%  | 45.08%  | 40.37%  |
+
 ## Random forest
   <br>Accuracy on test-set: Mirex_Root:55%<br>
 ### How to use:
@@ -110,3 +126,13 @@ python test_rf.py --model pretrained/RF_MirexRoot_TheBeatles180_librosa.pkl --co
 --category, default: MirexRoot<br>
 --subsong_len, default: 40, length of song part in seconds to be splitted during preprocess<br>
 --song_len, default: 180 if <i>subsong_len</i> is not specified, song will be cutted or zeropaded to <i>song_len</i><br> 
+
+# Applications
+## Realtime demo 
+```
+python realtime.py --category MirexRoot
+```
+## Web-application for chords recognition
+```
+python web_app\server.py
+```
