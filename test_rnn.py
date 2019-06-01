@@ -8,7 +8,7 @@ from preprocess.chords import preds_to_lab
 from preprocess.generators import gen_train_data, gen_test_data
 from train_rnn import val_model
 from utils.parser import get_test_parser
-from utils.utils import get_params_by_category, load_model
+from utils.utils import get_params_by_category
 
 
 def t(model, songs_list, audio_root, params, save_path):
@@ -39,11 +39,4 @@ if __name__ == '__main__':
         model.load_state_dict(torch.load(args.model, map_location='cpu'))
     model.eval()
     conv_list = args.conv_list
-    if args.save_as_lab:
-        t(model, args.test_list, args.audio_root, params, args.lab_path)
-    else:
-        if not conv_list:
-            conv_list = gen_train_data(args.test_list, args.audio_root, args.gt_root, params, args.conv_root,
-                                       args.subsong_len, args.song_len)
-        dataloader = get_test_seq_dataloader(conv_list)
-        val_model(model, dataloader, print_results=True, num_classes=y_size)
+    t(model, args.test_list, args.audio_root, params, args.lab_path)

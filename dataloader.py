@@ -1,5 +1,3 @@
-import sklearn
-from sklearn.model_selection import train_test_split
 import torch
 from torch.utils.data import DataLoader, Dataset, ConcatDataset
 import pandas as pd

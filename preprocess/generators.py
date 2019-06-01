@@ -117,7 +117,6 @@ def gen_train_data(songs_list, audio_root, gt_root, params, converted_root=None,
         y_nums = convert_gt(f'{gt_root}/{song_title}.lab', param['hop_size'], param['fs'],
                             len(Xs[0]),
                             category)
-        # TODO transpose chords
         for i, mod_step in enumerate(mod_steps):
             y_nums_song = mod_y(y_nums, mod_step)
             y_song = chords_nums_to_inds(y_nums_song)

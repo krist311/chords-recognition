@@ -12,12 +12,11 @@ from preprocess.chords import TypesConverter, chord_nums_to_inds
 
 from models import LSTMClassifier, GRUClassifier, AttentionLSTM, MSResNet
 from dataloader import get_train_val_seq_dataloader
-from preprocess.chords import preds_to_lab
-from preprocess.generators import gen_test_data, gen_train_data
+from preprocess.generators import gen_train_data
 import sys
 
 from utils.parser import get_train_rnn_parser
-from utils.utils import get_params_by_category, save_model
+from utils.utils import get_params_by_category
 
 torch.set_default_dtype(torch.float64)
 

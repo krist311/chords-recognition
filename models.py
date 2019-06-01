@@ -12,19 +12,6 @@ def conv3x3(in_channels, out_channels, stride=1):
                      stride=stride, padding=1, bias=False)
 
 
-import torch.nn as nn
-import math
-import torch.utils.model_zoo as model_zoo
-
-import torch
-
-
-def conv3x3(in_planes, out_planes, stride=1):
-    """3x3 convolution with padding"""
-    return nn.Conv1d(in_planes, out_planes, kernel_size=3, stride=stride,
-                     padding=1, bias=False)
-
-
 def conv5x5(in_planes, out_planes, stride=1):
     return nn.Conv1d(in_planes, out_planes, kernel_size=5, stride=stride,
                      padding=1, bias=False)
@@ -172,15 +159,6 @@ class MSResNet(nn.Module):
         # self.drop = nn.Dropout(p=0.2)
         self.fc = nn.Linear(256 * 3, num_classes)
 
-        # todo: modify the initialization
-        # for m in self.modules():
-        #     if isinstance(m, nn.Conv1d):
-        #         n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-        #         m.weight.data.normal_(0, math.sqrt(2. / n))
-        #     elif isinstance(m, nn.BatchNorm1d):
-        #         m.weight.data.fill_(1)
-        #         m.bias.data.zero_()
-
     def _make_layer3(self, block, planes, blocks, stride=2):
         downsample = None
         if stride != 1 or self.inplanes3 != planes * block.expansion:
@@ -190,8 +168,7 @@ class MSResNet(nn.Module):
                 nn.BatchNorm1d(planes * block.expansion),
             )
 
-        layers = []
-        layers.append(block(self.inplanes3, planes, stride, downsample))
+        layers = [block(self.inplanes3, planes, stride, downsample)]
         self.inplanes3 = planes * block.expansion
         for i in range(1, blocks):
             layers.append(block(self.inplanes3, planes))
@@ -270,48 +247,6 @@ class MSResNet(nn.Module):
         return out1
 
 
-class Attention(nn.Module):
-    def __init__(self, feature_dim, step_dim, bias=True, **kwargs):
-        super(Attention, self).__init__(**kwargs)
-
-        self.supports_masking = True
-
-        self.bias = bias
-        self.feature_dim = feature_dim
-        self.step_dim = step_dim
-        self.features_dim = 0
-
-        weight = torch.zeros(feature_dim, 1)
-        nn.init.kaiming_uniform_(weight)
-        self.weight = nn.Parameter(weight)
-
-        if bias:
-            self.b = nn.Parameter(torch.zeros(step_dim))
-
-    def forward(self, x, mask=None):
-        feature_dim = self.feature_dim
-        step_dim = self.step_dim
-
-        eij = torch.mm(
-            x.contiguous().view(-1, feature_dim),
-            self.weight
-        ).view(-1, step_dim)
-
-        if self.bias:
-            eij = eij + self.b
-
-        eij = torch.tanh(eij)
-        a = torch.exp(eij)
-
-        if mask is not None:
-            a = a * mask
-
-        a = a / (torch.sum(a, 1, keepdim=True) + 1e-10)
-
-        weighted_input = x * torch.unsqueeze(a, -1)
-        return torch.sum(weighted_input, 1)
-
-
 class AttentionLSTM(torch.nn.Module):
 
     def __init__(self, input_size, hidden_dim, output_size, num_layers, use_gpu, bidirectional,
@@ -326,13 +261,13 @@ class AttentionLSTM(torch.nn.Module):
         self.lstm = nn.LSTM(input_size, hidden_dim, num_layers=self.num_layers, batch_first=True,
                             bidirectional=bidirectional, dropout=dropout[1])
         # attention
-        self.W1 = nn.Linear(self.num_directions * hidden_dim, self.num_directions*hidden_dim)
+        self.W1 = nn.Linear(self.num_directions * hidden_dim, self.num_directions * hidden_dim)
         self.W2 = nn.Linear(850, 850)
         self.V = nn.Linear(850, 850)
         ###self.hidden2out = nn.Linear(hidden_dim * self.num_directions, output_size)
-        self.bn1 = nn.BatchNorm1d(hidden_dim*self.num_directions)
+        self.bn1 = nn.BatchNorm1d(hidden_dim * self.num_directions)
         self.dropout2 = nn.Dropout(p=dropout[2])
-        self.hidden2out = nn.Linear(hidden_dim*self.num_directions, output_size)
+        self.hidden2out = nn.Linear(hidden_dim * self.num_directions, output_size)
 
     def disable_dropout(self):
         self.lstm.dropout = .0
@@ -368,18 +303,6 @@ class AttentionLSTM(torch.nn.Module):
 
     def forward(self, batch, lengths):
 
-        """
-        Parameters
-        ----------
-        input_sentence: input_sentence of shape = (batch_size, num_sequences)
-        batch_size : default = None. Used only for prediction on a single sentence after training (batch_size = 1)
-
-        Returns
-        -------
-        Output of the linear layer containing logits for pos & neg class which receives its input as the new_hidden_state which is basically the output of the Attention network.
-        final_output.shape = (batch_size, output_size)
-
-        """
         self.hidden = self.init_hidden(batch.size(0))
         batch = self.dropout1(batch)
         # pack sequence if lengths available(during training)
