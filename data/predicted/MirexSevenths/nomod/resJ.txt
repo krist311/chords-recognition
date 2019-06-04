@@ -1,0 +1,52 @@
+List: "C:\Users\Daniil\Documents\Git\vkr\data\tracklists\JayChou29List"
+
+************************
+* Chords MirexSevenths *
+************************
+Duration of evaluated chords: 6896.51 s
+Average score: 41.1426%
+
+Chord detection results
+-----------------------
+Correct chords: 2707.13 s (39.2537%)
+Substituted chords: 3877.62 s (56.2259%)
+Deleted chords: 72.6745 s (1.05379%)
+Inserted chords: 108.807 s (1.57771%)
+Correct no-chords: 130.27 s (1.88893%)
+
+Results per chord type
+----------------------
+maj: 1732.9 s (58.5776%) of 2958.3 s (42.8956%)
+maj7: 55.6917 s (9.95417%) of 559.481 s (8.11253%)
+7: 64.0479 s (10.4538%) of 612.677 s (8.88388%)
+min: 362.872 s (31.8826%) of 1138.15 s (16.5033%)
+min7: 491.621 s (35.3984%) of 1388.82 s (20.1381%)
+
+Results per number of chromas wrong
+-----------------------------------
+0 chromas wrong: 2707.13 s (39.2537%)
+  of which root correct: 2707.13 s (39.2537%)
+  of which root incorrect: 0 s (0%)
+1 chroma wrong: 1781.21 s (25.8277%)
+  of which 1 substitution: 544.202 s (7.89098%)
+  of which 1 deletion: 0 s (0%)
+  of which 1 insertion: 0 s (0%)
+2 chromas wrong: 1227.43 s (17.7978%)
+  of which 2 substitutions: 671.583 s (9.73802%)
+  of which 1 substitution, 1 deletion: 815.806 s (11.8293%)
+  of which 1 substitution, 1 insertion: 421.197 s (6.1074%)
+3 chromas wrong: 778.271 s (11.285%)
+  of which 3 substitutions: 258.688 s (3.75101%)
+  of which 2 substitutions, 1 deletion: 388.99 s (5.64039%)
+  of which 2 substitutions, 1 insertion: 166.857 s (2.41944%)
+4 chromas wrong: 90.7161 s (1.31539%)
+  of which 4 substitutions: 17.7102 s (0.256799%)
+  of which 3 substitutions, 1 deletion: 374.457 s (5.42967%)
+  of which 3 substitutions, 1 insertion: 145.125 s (2.10432%)
+
+Root/type results
+-----------------
+Both correct: 2707.13 s (39.2537%)
+Only root correct: 1533.46 s (22.2353%)
+Only type correct: 684.108 s (9.91964%)
+Both wrong: 1660.06 s (24.071%)

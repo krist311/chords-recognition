@@ -1,0 +1,32 @@
+ List: "C:\Users\Daniil\Documents\Git\vkr\data\tracklists\JayChou29List"
+
+********************
+* Chords MirexRoot *
+********************
+Duration of evaluated chords: 7662.89 s
+Average score: 72.0492%
+
+Chord detection results
+-----------------------
+Correct chords: 5388.12 s (70.3145%)
+Substituted chords: 2011.62 s (26.2515%)
+Deleted chords: 24.0701 s (0.314113%)
+Inserted chords: 106.149 s (1.38524%)
+Correct no-chords: 132.928 s (1.7347%)
+
+Results per chord type
+----------------------
+: 5388.12 s (72.5789%) of 7423.81 s (96.8801%)
+
+Results per number of chromas wrong
+-----------------------------------
+0 chromas wrong: 7399.74 s (96.5659%)
+  of which root correct: 5388.12 s (70.3145%)
+  of which root incorrect: 2011.62 s (26.2515%)
+
+Root/type results
+-----------------
+Both correct: 5388.12 s (70.3145%)
+Only root correct: 0 s (0%)
+Only type correct: 2011.62 s (26.2515%)
+Both wrong: 9.09495e-013 s (1.18688e-014%)

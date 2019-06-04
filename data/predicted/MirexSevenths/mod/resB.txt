@@ -1,0 +1,52 @@
+List: "C:\Users\Daniil\Documents\Git\vkr\data\tracklists\TheBeatles180List"
+
+************************
+* Chords MirexSevenths *
+************************
+Duration of evaluated chords: 27848.7 s
+Average score: 91.0761%
+
+Chord detection results
+-----------------------
+Correct chords: 24154.8 s (86.7361%)
+Substituted chords: 2286.75 s (8.21134%)
+Deleted chords: 94.393 s (0.33895%)
+Inserted chords: 104.048 s (0.37362%)
+Correct no-chords: 1208.63 s (4.33998%)
+
+Results per chord type
+----------------------
+maj: 17444.4 s (94.5308%) of 18453.7 s (66.2643%)
+maj7: 229.443 s (64.5671%) of 355.355 s (1.27602%)
+7: 1734.51 s (70.3941%) of 2464 s (8.84783%)
+min: 4177.76 s (93.4994%) of 4468.22 s (16.0447%)
+min7: 568.684 s (71.5598%) of 794.697 s (2.85363%)
+
+Results per number of chromas wrong
+-----------------------------------
+0 chromas wrong: 24154.8 s (86.7361%)
+  of which root correct: 24154.8 s (86.7361%)
+  of which root incorrect: 0 s (0%)
+1 chroma wrong: 1134.48 s (4.07375%)
+  of which 1 substitution: 196.694 s (0.706295%)
+  of which 1 deletion: 0 s (0%)
+  of which 1 insertion: 0 s (0%)
+2 chromas wrong: 734.106 s (2.63605%)
+  of which 2 substitutions: 667.827 s (2.39806%)
+  of which 1 substitution, 1 deletion: 874.839 s (3.1414%)
+  of which 1 substitution, 1 insertion: 62.9521 s (0.226051%)
+3 chromas wrong: 396.617 s (1.42419%)
+  of which 3 substitutions: 279.857 s (1.00492%)
+  of which 2 substitutions, 1 deletion: 53.4562 s (0.191953%)
+  of which 2 substitutions, 1 insertion: 12.8219 s (0.0460413%)
+4 chromas wrong: 21.5413 s (0.0773513%)
+  of which 4 substitutions: 3.04153 s (0.0109216%)
+  of which 3 substitutions, 1 deletion: 81.2086 s (0.291607%)
+  of which 3 substitutions, 1 insertion: 35.5515 s (0.12766%)
+
+Root/type results
+-----------------
+Both correct: 24154.8 s (86.7361%)
+Only root correct: 1009.74 s (3.6258%)
+Only type correct: 786.147 s (2.82293%)
+Both wrong: 490.865 s (1.76262%)

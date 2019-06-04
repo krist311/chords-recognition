@@ -1,0 +1,45 @@
+List: "C:\Users\Daniil\Documents\Git\vkr\data\tracklists\TheBeatles180List"
+
+**************************
+* Chords MirexMajMinBass *
+**************************
+Duration of evaluated chords: 28322.4 s
+Average score: 94.2746%
+
+Chord detection results
+-----------------------
+Correct chords: 25469.4 s (89.9268%)
+Substituted chords: 1429.72 s (5.04801%)
+Deleted chords: 110.578 s (0.390426%)
+Inserted chords: 81.2837 s (0.286995%)
+Correct no-chords: 1231.39 s (4.34777%)
+
+Results per chord type
+----------------------
+maj/1: 0 s (n/a) of 0 s (0%)
+maj/5: 489.673 s (81.0971%) of 603.81 s (2.13192%)
+maj/3: 306.182 s (89.2379%) of 343.107 s (1.21144%)
+maj: 19687.6 s (95.4008%) of 20636.7 s (72.8637%)
+min/1: 0 s (n/a) of 0 s (0%)
+min/5: 166.417 s (87.4934%) of 190.205 s (0.671573%)
+min/b3: 157.263 s (89.7161%) of 175.289 s (0.618908%)
+min: 4662.27 s (92.1296%) of 5060.56 s (17.8677%)
+
+Results per number of chromas wrong
+-----------------------------------
+0 chromas wrong: 25559.2 s (90.2438%)
+  of which root correct: 25469.4 s (89.9268%)
+  of which root incorrect: 89.7884 s (0.317023%)
+1 chroma wrong: 297.009 s (1.04867%)
+  of which 1 substitution: 297.009 s (1.04867%)
+2 chromas wrong: 737.149 s (2.60271%)
+  of which 2 substitutions: 737.149 s (2.60271%)
+3 chromas wrong: 305.77 s (1.07961%)
+  of which 3 substitutions: 305.77 s (1.07961%)
+
+Root/type results
+-----------------
+Both correct: 25469.4 s (89.9268%)
+Only root correct: 238.225 s (0.841118%)
+Only type correct: 693.362 s (2.44811%)
+Both wrong: 498.13 s (1.75879%)

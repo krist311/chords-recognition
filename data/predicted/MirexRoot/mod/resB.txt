@@ -1,0 +1,32 @@
+List: "C:\Users\Daniil\Documents\Git\vkr\data\tracklists\TheBeatles180List"
+
+********************
+* Chords MirexRoot *
+********************
+Duration of evaluated chords: 29333.4 s
+Average score: 95.0649%
+
+Chord detection results
+-----------------------
+Correct chords: 26643.2 s (90.8286%)
+Substituted chords: 1252.77 s (4.27079%)
+Deleted chords: 124.838 s (0.425581%)
+Inserted chords: 70.0283 s (0.238732%)
+Correct no-chords: 1242.65 s (4.23628%)
+
+Results per chord type
+----------------------
+: 26643.2 s (95.0836%) of 28020.8 s (95.525%)
+
+Results per number of chromas wrong
+-----------------------------------
+0 chromas wrong: 27895.9 s (95.0994%)
+  of which root correct: 26643.2 s (90.8286%)
+  of which root incorrect: 1252.77 s (4.27079%)
+
+Root/type results
+-----------------
+Both correct: 26643.2 s (90.8286%)
+Only root correct: 0 s (0%)
+Only type correct: 1252.77 s (4.27079%)
+Both wrong: 5.68434e-012 s (1.93784e-014%)
