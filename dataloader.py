@@ -66,7 +66,7 @@ def collate_fn(data):
     # sort a list by sequence length (descending order) to use pack_padded_sequence
     data.sort(key=lambda x: len(x[0]), reverse=True)
 
-    # seperate source and target sequences
+    # separate source and target sequences
     src_seqs, gt_seqs = zip(*data)
 
     lengths = [len(seq) for seq in src_seqs]
@@ -94,8 +94,3 @@ def get_train_val_seq_dataloader(file_path, batch_size, y_ind):
                       collate_fn=collate_fn), DataLoader(
         SeqDatasetConverter(val, y_ind),
         batch_size=batch_size, shuffle=True, num_workers=4, collate_fn=collate_fn)
-
-
-def get_test_seq_dataloader(file_path, batch_size=4):
-    df = pd.read_csv(file_path, header=None, sep=' ')
-    return DataLoader(SeqDatasetConverter(df), batch_size=batch_size, shuffle=True, num_workers=4)

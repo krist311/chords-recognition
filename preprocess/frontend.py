@@ -39,7 +39,6 @@ def preprocess_mauch(audiopath, feparam, n_bins=84, bins_per_octave=12, mod_step
     LE = logFreqNoteProfile(ntones, fmin, fratio, USR, feparam['fs'], nbins=int(feparam['wl'] / 2 + 1),
                             wl=feparam['wl'])
 
-    # TODO lowcat as done in mySpectogram
     X = abs(librosa.stft(x, n_fft=feparam['wl'], hop_length=feparam['hop_size'], window='hamming'))
 
     # note that using cosine similarity method there are both simple tone

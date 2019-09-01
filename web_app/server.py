@@ -15,9 +15,8 @@ from preprocess.frontend import preprocess_librosa
 from utils.utils import get_params_by_category
 
 
-class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
-    """Simple HTTP request handler with GET/HEAD/POST commands.
-    This serves files from the current directory and any of its
+class HTTPRequestHandler(http.server.BaseHTTPRequestHandler):
+    """This serves files from the current directory and any of its
     subdirectories.  The MIME type for files is determined by
     calling the .guess_type() method. And can reveive file uploaded
     by client.
@@ -112,13 +111,6 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         return (False, "Unexpect Ends of data.", fn)
 
     def send_head(self):
-        """Common code for GET and HEAD commands.
-        This sends the response code and MIME headers.
-        Return value is either a file object (which has to be copied
-        to the outputfile by the caller unless the command was HEAD,
-        and must be closed by the caller under all circumstances), or
-        None, in which case the caller has nothing further to do.
-        """
         path = self.translate_path(self.path)
         f = None
         if os.path.isdir(path):
@@ -256,7 +248,7 @@ def predict_chords(filename):
         return str.encode('\n'.join(preds_to_lab(y, 512, 11025, 'MirexSevenths', save_path = None, song_name='')))
 
 
-def run(HandlerClass=SimpleHTTPRequestHandler,
+def run(HandlerClass=HTTPRequestHandler,
       ServerClass=http.server.HTTPServer):
     http.server.test(HandlerClass, ServerClass)
 

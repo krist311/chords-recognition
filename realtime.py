@@ -11,6 +11,7 @@ import pyaudio
 import librosa
 import numpy as np
 
+# demo uses best pretrained models for each category
 def get_weights_path_by_category(category):
     if category == 'MirexRoot':
         return 'data/predicted/MirexRoot/mod/LSTM_bi_True_MirexRoot_librosa_acc_83.47220891996297_lr_1.0_wd_1e-07_nl_3_hd_128_ne_100_sss_10_sg_0.9_opt_SGD'
@@ -71,7 +72,7 @@ if __name__ == '__main__':
     weights_path = get_weights_path_by_category(args.category)
     params, y_size, y_ind = get_params_by_category(args.category)
     prev_chord = ''
-    # demo uses hardcoded
+    # all best pretrained models have identical architecture
     model = LSTMClassifier(input_size=84, hidden_dim=128, output_size=y_size,
                            num_layers=3,
                            use_gpu=True, bidirectional=True, dropout=[0.4, 0.0, 0.0])

@@ -10,7 +10,7 @@ from pprint import pformat
 
 from preprocess.chords import TypesConverter, chord_nums_to_inds
 
-from models import LSTMClassifier, GRUClassifier, AttentionLSTM, MSResNet
+from models import LSTMClassifier, GRUClassifier
 from dataloader import get_train_val_seq_dataloader
 from preprocess.generators import gen_train_data
 import sys
@@ -154,12 +154,6 @@ def train(args, category=None):
                               use_gpu=use_gpu, bidirectional=args.bidirectional, dropout=args.dropout)
         if args.checkpoint:
             model.load_state_dict(checkpoint['model_state_dict'])
-    elif args.model == 'AttentionLSTM':
-        model = AttentionLSTM(input_size=input_size, hidden_dim=args.hidden_dim, output_size=num_classes,
-                              num_layers=args.num_layers,
-                              use_gpu=use_gpu, bidirectional=args.bidirectional, dropout=args.dropout)
-    elif args.model == 'CSI':
-        model = MSResNet(input_channel=1, num_classes=num_classes)
     if use_gpu:
         model = model.cuda()
 
@@ -208,7 +202,7 @@ def train(args, category=None):
                     running_loss = 0.0
                     model.train()
                 pbar.update()
-                #save checkpoint every 10 epochs
+                # save checkpoint every 10 epochs, necessary because cloud could be disconnected any time
             if epoch %10 ==0:
                 import numpy as np
                 rand = np.random.randint(50)
@@ -220,9 +214,6 @@ def train(args, category=None):
                     'sch_state_dict': scheduler.state_dict()
                 }, f'checkpoint{rand}.tar')
                 print(f'saving as checkpoint{rand}.tar')
-                # if 'google' in sys.modules:
-                #     from google.colab import files
-                #     files.download(f'checkpoint{rand}.tar')
 
             # disable dropout on last 10 epochs
             if args.num_epochs - epoch == 10:
@@ -232,7 +223,6 @@ def train(args, category=None):
     acc = val_model(model, val_loader, num_classes, print_results=True)
 
     # save pretrained model
-    # TODO save model in folders by category
     if args.save_model:
         torch.save(model.state_dict(),
                    f"pretrained/{args.model}_bi_{args.bidirectional}_{args.category}_{'librosa' if args.use_librosa else 'mauch'}_acc_"
