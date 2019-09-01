@@ -1,3 +1,10 @@
+# General information
+Current repository contains complete Chords Recognition system. System takes audiofile as input and returns timings for each chord according to [Mirex categories](https://www.music-ir.org/mirex/wiki/2019:Audio_Chord_Estimation) (See example bellow). System implementation is based on Recurrent neural net with LSTM cell.   <br>
+![output example](https://sun9-12.userapi.com/c856016/v856016534/de37d/YuIR9iuvQUU.jpg)
+<br>
+In addition, repo contains realtime demo and simple web-app, which allows user to apload song and get chords for it.
+Demo video of realtime chords recognition is avaliable [here](https://www.youtube.com/watch?v=rxZA6Nwei4E) <br>
+Project implemented as a part of Master thesis, full text avaliable [here](https://docs.google.com/document/d/1vFkN35JcqBUbSRvDcb89lD4Pxb6BW4Qk_xi3q33EgsU/edit?usp=sharing).
 # Datasets
 - [TheBeatles180 Isophonics dataset](http://www.isophonics.net/content/reference-annotations-beatles) 
   - [audio](https://drive.google.com/open?id=1WzdcHeLeFHrYu_2_NDTEEglfrKLLKc1c) - extract in <i>data/audio</i>
