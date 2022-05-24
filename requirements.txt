@@ -9,6 +9,6 @@ scikit-learn==0.20.1
 scipy==1.1.0
 tensorboard==1.12.2
 tensorboardX==1.6
-tensorflow==1.12.0
+tensorflow==2.6.4
 torch==0.4.1
 tqdm==4.31.1
